@@ -1,0 +1,35 @@
+Galactic Input EBNF:
+stmt :=   assign_statement, EOL 
+       | query_statement, EOL
+
+assign_statement :=   variable, ws, "is", ws, variable
+                   | variable, ws, variable, ws, "is", arabic_number
+
+query_statement :=   "How many", ws, variable, ws, "is", ws, variable, ws, variable, ws, [ variable, ws, ] "?"
+                  | "How much", ws, "is", ws,  "?"
+
+variable := letter, { letter }
+
+arabic_number := arabic_numeral, [ { arabic_numeral } ], [ ".", { arabic_numeral } ]
+
+arabic_numeral := :digits: 
+
+letter := :alpha:
+
+ws : " "
+
+Roman Numeral EBNF:
+
+number := [ "M" ], [ "M" ], [ "M" ], [ hundreds ]
+
+hundreds :=   [ "CM" ], [ tens ]
+           | [ "CD" ], [ tens ]
+           | [ "D" ], [ "C" ], [ "C" ], [ "C" ], [ tens ]
+
+tens :=   [ "XC" ], [ ones ]
+       | [ "XL" ], [ ones ]
+       | [ "L" ], [ "X" ], [ "X" ], [ "X" ], [ ones ]
+
+ones := "IX" | "IV" | [ "V" ], [ "I" ], [ "I" ], [ "I" ]
+
+
