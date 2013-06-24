@@ -9,7 +9,7 @@ class Token
   end
 
   def to_s
-    return @type.tos_s + " " + @value.to_s + " " + @pos.tos_s
+    return @type + " " + @value.to_s + " " + @pos.to_s
   end
 end
 
@@ -23,29 +23,34 @@ class Lexer
   def initialize(rules, skip_whitespace = true)
     @rules = rules
     @skip_whitespace = skip_whitespace
-    #@regexps = []
+    @regexps = {}
     if @rules.respond_to?(:has_key?)
-      patterns = [] 
-      #@regexp = Regexp.new(pattern)
+      # Create a regular expression for each individual rule. 
       @rules.keys.each do |rule|
-        #@regexps.push(Regexp.new(rule))
-        pattern = "(?<" + @rules[rule] + ">" + rule + ")"
-        patterns.push(pattern)
+        @regexps[@rules[rule]] = Regexp.new(rule)
       end
-      @regexp = Regexp.new(patterns.join("|"))
     else
       raise LexerError, "Input rules must be inside a hash!"
     end
   end
 
+  # This method splits up the input string into a list of
+  # token objects according to the inputted rules.
   def tokenize(input = "")
     pos = 0
     tokens = []
-    repeat until pos == input.length
-      if input.index(@regexp, pos) == pos
-        token = @regexp.match(input, pos)
-        tokens.push(token)
-      end
-      #print @regexp.match(input)
+    # Process the input string into tokens.
+    until pos == input.length
+      # Match the current position of the input string
+      # against all rules to find the best match
+      @regexps.keys.each do |reg|
+        if input.index(@regexps[reg], pos) == pos
+          token = @regexps[reg].match(input, pos)
+          tokens.push(Token.new(reg, token, pos))
+          pos = pos + token.to_s.length
+        end
+      end 
+    end
+    return tokens
   end 
 end

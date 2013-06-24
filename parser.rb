@@ -20,25 +20,12 @@ class Parser
     @lexer = Lexer.new(@rules, false)
   end
 
-  def get_input(input = "")
+  def parse_input(input = "")
     @history.push(input)
-    @lexer.tokenize(input)
-  end
-
-  def set(tok = "")
-    if !@tokens.keys.include?(tok)
-      @tokens[tok] = Token.new(tok)
+    result = @lexer.tokenize(input)
+    result.each do |token|
+      puts token.to_s
     end
-  end
-
-  def get(tok = nil)
-    if tok != nil
-      return @tokens[tok]
-    end
-  end
-
-  def get_all
-    return @tokens.values.to_s
   end
 end
 
