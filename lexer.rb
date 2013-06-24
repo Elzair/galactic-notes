@@ -39,6 +39,13 @@ class Lexer
   end
 
   def tokenize(input = "")
-    print @regexp.match(input)
+    pos = 0
+    tokens = []
+    repeat until pos == input.length
+      if input.index(@regexp, pos) == pos
+        token = @regexp.match(input, pos)
+        tokens.push(token)
+      end
+      #print @regexp.match(input)
   end 
 end
