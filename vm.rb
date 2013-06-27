@@ -29,8 +29,6 @@ class VM
     }
     # Make sure roman numerals cannot be overwritten!
     @variables = variables.merge(roman_numerals)
-    # Load initial currency value
-    @variables["Credits"] = Variable.new("Credits", 1, "CURRENCY", true)
   end
 
   # This method retrieves the variable indicated by name.

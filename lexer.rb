@@ -82,23 +82,22 @@ class Lexer
     token = nil
     @regexps.keys.each do |reg|
       if input.index(@regexps[reg], pos) == pos
-        token = Token.new(reg, @regexps[reg].match(input, pos), pos)
+        token = Token.new(reg, @regexps[reg].match(input, pos).to_s, pos)
         return token
-        #drint token.to_s
-        #break # end loop if regexp matched
       end
     end 
     # Raise error if no tokens were found
     if token == nil 
       raise LexerError, "Invalid token(s): " + input[pos..-1]
-    #else
-      #return token
     end
   end
 
   # This method returns the next non-whitespace token
   def next_token_no_ws(input = "", pos = 0)
     token = next_token(input, pos)
+    if token == nil
+      return token
+    end
     pos = token.pos + token.value.length
     if token.type != "WS"
       return token
