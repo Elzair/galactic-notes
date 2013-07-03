@@ -23,9 +23,9 @@ end
 # This class analyzes an input string and separates it
 # into tokens defined by the inputted series of rules.
 class Lexer
-  def initialize(rules, skip_whitespace = true)
+  def initialize(rules, ignore_whitespace = true)
     @rules = rules
-    @skip_whitespace = skip_whitespace
+    @ignore_whitespace = ignore_whitespace
     @regexps = {}
     if @rules.respond_to?(:has_key?)
       # Create a regular expression for each individual rule. 

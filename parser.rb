@@ -41,7 +41,7 @@ class GalacticParser
         "\n" => "EOL"
       }
     end
-    @lexer = Lexer.new(@rules, false)
+    @lexer = Lexer.new(@rules)
   end
 
   # This method parses and handles input from the user
