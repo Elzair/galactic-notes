@@ -10,9 +10,10 @@ if __FILE__ == $0
   loop do
     print "Enter Input: "
     input = gets.chomp
-    parser.parse_input(input)
-    #handler.set(input)
-    #puts "You entered: " + handler.get(input).to_s
-    #puts handler.get_all
+    begin
+      parser.parse_input(input)
+    rescue ParseError => e
+      puts e.message
+    end
   end 
 end

@@ -54,7 +54,7 @@ class GalacticParser
     elsif curr_token.type == "VARIABLE"
       assign(curr_token)
     else
-      raise ParseError, "Invalid input: " + input
+      raise ParseError, "I don't know what you're talking about!" 
     end
   end
 
