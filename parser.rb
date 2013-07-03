@@ -8,7 +8,7 @@ end
 # Galactic Input grammar or the Roman Numeral Grammar 
 class GalacticParser
   # Create new parser object
-  def initialize(vm = nil)
+  def initialize(vm = nil, ignore_case = false)
     @vm = vm
     @history = []
     @rules = {
