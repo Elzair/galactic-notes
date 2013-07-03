@@ -7,43 +7,14 @@ end
 class Parser
   # Create new parser object
   def initialize(lexer = nil, ignore_case = false)
-    if lexer == nil or !lexer.responds_to?("next_token")
+    # Ensure @lexer is a valid lexical analyzer
+    if lexer == nil or !lexer.respond_to?("next_token")
       raise ParseError, "I need a valid lexical analyzer!"
     else
       @lexer = lexer
     end
     @ignore_case = ignore_case
     @history = []
-    #if @ignore_case
-    #  @rules = {
-    #    "HOW" => "HOW",
-    #    "MANY" => "MANY",
-    #    "MUCH" => "MUCH",
-    #    "IS" => "IS",
-    #    "QUIT" => "QUIT",
-    #    "CREDITS" => "CREDITS",
-    #    "[[:alpha:]]+" => "VARIABLE",
-    #    "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
-    #    "\\?" => "QUESTION",
-    #    "\\s" => "WS",
-    #    "\n" => "EOL"
-    #  }
-    #else
-    #  @rules = {
-    #    "How" => "HOW",
-    #    "many" => "MANY",
-    #    "much" => "MUCH",
-    #    "is" => "IS",
-    #    "quit" => "QUIT",
-    #    "Credits" => "CREDITS",
-    #    "[[:alpha:]]+" => "VARIABLE",
-    #    "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
-    #    "\\?" => "QUESTION",
-    #    "\\s" => "WS",
-    #    "\n" => "EOL"
-    #  }
-    #end
-    #@lexer = Lexer.new(@rules)
   end
 
   # This method parses and handles input from the user
@@ -57,6 +28,7 @@ class Parser
     @tokens = []
     @pos = 0
     statement
+    return @tokens
   end
 
   # This method matches the top level rule for the Galactic Notes input grammar.
@@ -243,8 +215,8 @@ class Parser
   def handle_end
     if get_next_token(true, false).type != "NoTokenFound"
       raise ParseError, "I don't know what you're talking about!"
-    else
-      puts @tokens.to_s
+    #else
+    #  puts @tokens.to_s
     end
   end
 
