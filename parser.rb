@@ -1,7 +1,7 @@
 require './astree.rb'
 
 # This class represents an error encountered by Parser during its operations.
-class ParseError < RuntimeError
+class ParserError < RuntimeError
 end
 
 # This class is an LL(2) [1] Recursive Descent Parser for the Galactic Notes program.  
@@ -12,7 +12,7 @@ class Parser
   def initialize(lexer = nil, ignore_case = false)
     # Ensure @lexer is a valid lexical analyzer
     if lexer == nil or !lexer.respond_to?("next_token")
-      raise ParseError, "I need a valid lexical analyzer!"
+      raise ParserError, "I need a valid lexical analyzer!"
     else
       @lexer = lexer
     end
@@ -55,7 +55,7 @@ class Parser
     elsif curr_token.type == "VARIABLE"
       assign(curr_token)
     else
-      raise ParseError, "I don't know what you're talking about!" 
+      raise ParserError, "I don't know what you're talking about!" 
     end
   end
 
@@ -74,7 +74,7 @@ class Parser
     elsif curr_token.type == "MUCH"
       how_much
     else
-      raise ParseError, "I don't know what you're talking about!"
+      raise ParserError, "I don't know what you're talking about!"
     end
   end
 
@@ -83,11 +83,11 @@ class Parser
     # Validate the sentence begins with "How many Credits is".
     curr_token = get_next_token
     if curr_token.type != "CREDITS"
-      raise ParseError, "How many of what?"
+      raise ParserError, "How many of what?"
     end
     curr_token = get_next_token
     if curr_token.type != "IS"
-      raise ParseError, "How many Credits do what?"
+      raise ParserError, "How many Credits do what?"
     end
 
     # Insert HOWMANY & GALNUMBER nodes into AST
@@ -101,7 +101,7 @@ class Parser
     curr_token = get_next_token(true, false)
     while curr_token.type != "QUESTION"
       if curr_token.type != "VARIABLE"
-        raise ParseError, "I don't know what " + curr_token.value + " is!"
+        raise ParserError, "I don't know what " + curr_token.value + " is!"
       end
       prev_token = curr_token
       curr_token = get_next_token(true, false)
@@ -127,7 +127,7 @@ class Parser
   def how_much
     # Make sure statement begins with "How much is"
     if get_next_token.type != "IS"
-      raise ParseError, "I don't know what you're talking about!"
+      raise ParserError, "I don't know what you're talking about!"
     end
 
     # Add HOWMUCH & GALNUMBER nodes to @output
@@ -144,7 +144,7 @@ class Parser
         curr_node = Node.new("GALNUMERAL", curr_token.value, [], false, true)
         @output.insert(curr_node, @output.seek({:name => "GALNUMBER"}))
       else
-        raise ParseError, "I don't know what " + curr_token.value + " is!"
+        raise ParserError, "I don't know what " + curr_token.value + " is!"
       end
       @tokens.push(curr_token)
       curr_token = get_next_token(true, false)
@@ -161,9 +161,9 @@ class Parser
   def assign(curr_token = nil)
     # First handle errors
     if curr_token == nil
-      raise ParseError, "I don't know what you're talking about!"
+      raise ParserError, "I don't know what you're talking about!"
     elsif curr_token.type != "VARIABLE"
-      raise ParseError, "I don't know what " + curr_token.value + " is!"
+      raise ParserError, "I don't know what " + curr_token.value + " is!"
     end
 
     # Add ASSIGN node to @output
@@ -192,7 +192,7 @@ class Parser
       @output.insert(prev_node, @output.seek({:name => "GALNUMBER"}))
       assign_value(curr_token)
     else
-      raise ParseError, "I don't know what you're talking about!"
+      raise ParserError, "I don't know what you're talking about!"
     end
   end
 
@@ -201,7 +201,7 @@ class Parser
   def assign_variable(curr_token = nil)
     # First handle errors
     if curr_token == nil
-      raise ParseError, "I need a variable!"
+      raise ParserError, "I need a variable!"
     end
 
     # Add "IS" to @tokens
@@ -214,7 +214,7 @@ class Parser
       curr_node = Node.new("GALNUMERAL", curr_token.value, [], false, true)
       @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
     else
-      raise ParseError, "I don't know what " + curr_token.value + " is!"
+      raise ParserError, "I don't know what " + curr_token.value + " is!"
     end
 
     handle_end
@@ -225,7 +225,7 @@ class Parser
   def assign_value(curr_token = nil)
     # First handler errors.
     if curr_token.type != "VARIABLE"
-      raise ParseError, "I need a variable!"
+      raise ParserError, "I need a variable!"
     end
    
     # Validate up until the "IS" token
@@ -241,7 +241,7 @@ class Parser
         curr_node = Node.new("COMMODITY", prev_token.value, [], false, true)
         @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
       else
-        raise ParseError, "I don't know what " + curr_token.value + " is!"
+        raise ParserError, "I don't know what " + curr_token.value + " is!"
       end
       @tokens.push(prev_token)
     end
@@ -251,14 +251,14 @@ class Parser
 
     curr_token = get_next_token
     if curr_token.type != "NUMBER"
-      raise ParseError, "I don't know what you're talking about!"
+      raise ParserError, "I don't know what you're talking about!"
     else
       curr_node = Node.new("NUMBER", curr_token.value, [], false, true)
       @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
     end
 
     if get_next_token.type != "CREDITS"
-      raise ParseError, "I don't know what you're talking about!"
+      raise ParserError, "I don't know what you're talking about!"
     end
 
     handle_end
@@ -267,7 +267,7 @@ class Parser
   # This method handles the end of an input statement
   def handle_end
     if get_next_token(true, false).type != "NoTokenFound"
-      raise ParseError, "I don't know what you're talking about!"
+      raise ParserError, "I don't know what you're talking about!"
     #else
     #  puts @tokens.to_s
     end
