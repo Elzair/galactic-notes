@@ -11,18 +11,6 @@ class Token
     @pos = pos
   end
 
-  #def type
-  #  return @type
-  #end
-
-  #def value
-  #  return @value
-  #end
-
-  #def pos
-  #  return @pos
-  #end
-
   def to_s
     return @type + " " + @value.to_s + " " + @pos.to_s
   end
@@ -54,36 +42,38 @@ class Lexer
 
   # This method splits up the input string into a list of
   # token objects according to the inputted rules.
-  def tokenize(input = "")
-    pos = 0
-    tokens = []
-    # Process the input string into tokens.
-    until pos == input.length
-      # Match the current position of the input string
-      # against all rules to find the best match
-      old_pos = pos
-      @regexps.keys.each do |reg|
-        if input.index(@regexps[reg], pos) == pos
-          token = @regexps[reg].match(input, pos)
-          tokens.push(Token.new(reg, token, pos))
-          pos = pos + token.to_s.length
-          break
-        end
-      end 
-      # Raise error if no tokens were found
-      if pos == old_pos
-        raise LexerError, "Invalid token(s): " + input[pos..-1]
-      end
-    end
-    return tokens
-  end 
+  #def tokenize(input = "")
+  #  pos = 0
+  #  tokens = []
+  #  # Process the input string into tokens.
+  #  until pos == input.length
+  #    # Match the current position of the input string
+  #    # against all rules to find the best match
+  #    old_pos = pos
+  #    @regexps.keys.each do |reg|
+  #      if input.index(@regexps[reg], pos) == pos
+  #        token = @regexps[reg].match(input, pos)
+  #        tokens.push(Token.new(reg, token, pos))
+  #        pos = pos + token.to_s.length
+  #        break
+  #      end
+  #    end 
+  #    # Raise error if no tokens were found
+  #    if pos == old_pos
+  #      raise LexerError, "Invalid token(s): " + input[pos..-1]
+  #    end
+  #  end
+  #  return tokens
+  #end 
 
   # This method returns the next substring of input
   # that matches one of the inputted rules
   def next_token(input = "", pos = 0)
+    # First check if parser has reached the end of the string
     if pos >= input.length
-      return nil
+      return Token.new("NoTokenFound", input[pos...-1], pos)
     end
+
     # Match the current position of the input string
     # against all rules to find the best match
     token = nil
@@ -93,6 +83,7 @@ class Lexer
         return token
       end
     end 
+
     # Return Error token if no other tokens were found
     if token == nil
       token = Token.new("NoTokenFound", input[pos...-1], pos) 
@@ -103,7 +94,7 @@ class Lexer
   # This method returns the next non-whitespace token
   def next_token_no_ws(input = "", pos = 0)
     token = next_token(input, pos)
-    if token == nil
+    if token.type == "NoTokenFound"
       return token
     end
     pos = token.pos + token.value.length

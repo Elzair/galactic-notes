@@ -33,21 +33,12 @@ class GalacticParser
     @input = input
     @tokens = []
     @pos = 0
-    #result = @lexer.tokenize(input)
-    #result.each do |token|
-    #  puts token.to_s
-    #end
     statement
   end
 
-  # This function matches the top level rule for
-  # the Galactic Notes input grammar.
+  # This method matches the top level rule for the Galactic Notes input grammar.
   def statement
-    # Get next token
-    #token = @lexer.next_token(input, @pos)
-    #puts token.to_s
-    #@tokens.push(token)
-    #@pos = token.pos + token.value.length
+    # Get first token
     curr_token = get_next_token(false, false)
 
     # Use curr_token to determine which rule to use
@@ -67,11 +58,12 @@ class GalacticParser
     end
   end
 
+  # This method parses a call to quit the program.
   def quit
-    # This method handles a call to quit the program.
     handle_end
   end
 
+  # This method parses the statement "How many Credits is [ numeral ] commodity ?".
   def how_many
     # Validate the sentence begins with "How many Credits is".
     curr_token = get_next_token
@@ -103,25 +95,12 @@ class GalacticParser
 
     # Add "?" to @tokens
     @tokens.push(curr_token)
-
-    # Validate number 
-    #token = galactic_number
-
-    # Validate commodity
-    #commodity(token, true)
-
-    # Verify final token is question mark
-    #token = get_next_token(true, true)
-    #if token.type != "QUESTION"
-    #  raise ParseError, "Are you asking me or telling me?"
-    #end
-
+    
     handle_end
   end
 
-  def howmuch
-    # This method parses the statement "How much is [ numeral ] ?".
-
+  # This method parses the statement "How much is [ numeral ] ?".
+  def how_much
     # Make sure statement begins with "How much is"
     if get_next_token.type != "IS"
       raise ParseError, "I don't know what you're talking about!"
@@ -145,9 +124,8 @@ class GalacticParser
     handle_end
   end
 
+  # This method handles assignment statements.
   def assign(curr_token = nil)
-    # This method handles assignment statements.
-
     # First handle errors
     if curr_token == nil
       raise ParseError, "I don't know what you're talking about!"
@@ -172,8 +150,8 @@ class GalacticParser
     end
   end
 
+  # This method parses the statement "variable is defined_numeral".
   def assign_variable(curr_token = nil)
-    # This method parses the statement "variable is defined_numeral".
 
     # First handle errors
     if curr_token == nil
@@ -230,74 +208,16 @@ class GalacticParser
     handle_end
   end
 
+  # This method handles the end of an input statement
   def handle_end
-    # This method handles the end of an input statement
-    if get_next_token != nil
+    if get_next_token(true, false).type != "NoTokenFound"
       raise ParseError, "I don't know what you're talking about!"
     else
       puts @tokens.to_s
     end
   end
 
-  #def galactic_number(validate = true)
-  #  loop do
-  #    token = get_next_token(true, false)
-  #    if token.type == "VARIABLE"
-  #      if validate == true
-  #        @vm.load_type("NUMERAL").each do |tok|
-  #          if tok.name == token.value and !tok.base
-  #            token.type = "GALACTIC"
-  #            @tokens.push(token)
-  #            break
-  #          end
-  #        end
-  #        return token
-  #      else
-  #        @tokens.push(token)
-  #      end
-  #    else
-  #      break
-  #    end
-  #  end
-    # Use a different lexer to parse roman numerals
-    #number = "" 
-    #old_pos = @pos   
-    #loop do
-    #  token = get_next_token(true, false)
-    #  if token.type == "NUMERAL" and !token.base
-    #    @vm.get_type("NUMERAL").each do |tok|
-    #      if tok.name == token.value and !tok.base 
-    #        number = number + tok.value
-    #        break
-    #      end 
-    #    end
-    #    raise ParseError, token.name + " is not defined!"
-    #  elsif number == "" 
-    #    raise ParseError, "Galactic numerals needed!"
-    #  else
-    #    @tokens.push(Token.new("NUMBER", number, old_pos))
-    #    break
-    #  end
-    #end
-    #@tokens.push(Token.new()
-  #end
-
- # def commodity(token = nil, validate = true)
- #   if token == nil
- #     token = get_next_token(true, false)
- #   end
- #   if validate == true
- #     @vm.load_type("COMMODITY").each do |tok|
- #       if tok.name == token.value and !tok.base
- #         @tokens.push(token)
- #       end
- #     end
- #     raise ParseError, "This Commodity does not exist!"
- #   end
- # end
-
-  # This is a convenience method to getting the next
-  # token from Lexer.
+  # This is a convenience method to getting the next token from @lexer.
   def get_next_token(skip_whitespace = true, auto_add = true)
     if skip_whitespace
       token = @lexer.next_token_no_ws(@input, @pos)
@@ -311,7 +231,6 @@ class GalacticParser
       @tokens.push(token)
     end
     @pos = token.pos + token.value.length
-    #puts token
     return token
   end
 end
