@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require './lexer.rb'
+require './astree.rb'
 require './parser.rb'
 require './vm.rb'
 
@@ -56,7 +57,7 @@ class Main
       }
     end
     @lexer = Lexer.new(@lexer_rules) 
-    @parser = Parser.new(@lexer, @ignore_case) 
+    @parser = Parser.new(@lexer) 
     @vm = VM.new
   end
 
@@ -105,6 +106,13 @@ class Main
       inp = input
       output.puts(inp) # Display input just as if it were typed
     end
+
+    # If @ignore_case is true, convert inp to upper case
+    if @ignore_case == true
+      inp = inp.upcase
+    end
+
+    # Analyzer user input
     begin
       result = @parser.parse_input(inp)
       #result.each do |token|

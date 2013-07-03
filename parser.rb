@@ -8,15 +8,13 @@ end
 class Parser
   # This method creates a new Parser object.
   # - lexer: an object representing the lexical analyzer to use
-  # - ignore_case: whether or not input is case sensitive
-  def initialize(lexer = nil, ignore_case = false)
+  def initialize(lexer = nil)
     # Ensure @lexer is a valid lexical analyzer
     if lexer == nil or !lexer.respond_to?("next_token")
       raise ParserError, "I need a valid lexical analyzer!"
     else
       @lexer = lexer
     end
-    @ignore_case = ignore_case
     @history = []
   end
 
@@ -24,9 +22,6 @@ class Parser
   # - input: a String containing the user's input
   def parse_input(input = "")
     # Initialize needed variables to a known state
-    if @ignore_case
-      input = input.upcase
-    end
     @output = AST.new
     @history.push(input)
     @input = input
