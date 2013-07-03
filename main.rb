@@ -58,6 +58,7 @@ class Main
     end
     @history = []
     @lexer = Lexer.new(@lexer_rules) 
+    # Inject name of Abstract Syntax Tree into Parser
     ast_class = AST
     @parser = Parser.new(ast_class)
     @vm = VM.new
