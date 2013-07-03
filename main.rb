@@ -43,7 +43,7 @@ class Main
       }
     else # Case Sensitive Rules
       @lexer_rules = {
-        "How" => "HOW",
+        "how" => "HOW",
         "many" => "MANY",
         "much" => "MUCH",
         "is" => "IS",
@@ -56,8 +56,9 @@ class Main
         "\n" => "EOL"
       }
     end
+    @history = []
     @lexer = Lexer.new(@lexer_rules) 
-    @parser = Parser.new(@lexer) 
+    @parser = Parser.new 
     @vm = VM.new
   end
 
@@ -98,7 +99,7 @@ class Main
       raise MainError, "You must pass a valid stream for err!"
     end
 
-    # Process user input differently if input is a stream or string
+    # Get user input differently if input is a stream or string
     output.print "Enter Input: "
     if is_input_stream
       inp = input.gets.chomp
@@ -112,15 +113,19 @@ class Main
       inp = inp.upcase
     end
 
-    # Analyzer user input
+    # Add input to @history
+    @history.push(inp)
+
+    # Process user input
     begin
-      result = @parser.parse_input(inp)
-      #result.each do |token|
-      #  output.print(token.to_s + " ")
-      #end
-      #output.puts("")
-      output.puts(result.to_s)
-    rescue ParseError => e
+      tokens = @lexer.tokenize(inp, true)
+      tokens.each do |token|
+        output.print(token.to_s + " ")
+      end
+      output.puts("")
+      ast = @parser.parse(tokens)
+      output.puts(ast.to_s)
+    rescue LexerError, ParserError, VMError => e
       err.puts e.message
     end
   end

@@ -46,6 +46,35 @@ class Lexer
     end
   end
 
+  # This method takes an input String and returns an Array of tokens
+  # matching the expressions in @rules.
+  # - input: the input String
+  # - ignore_whitespace: whether or not to skip whitespace tokens
+  # returns: an Array of Token objects
+  def tokenize(input = "", ignore_whitespace = true)
+    # Ensure input is a nonempty string
+    if input == nil or input == ""
+      raise ParserError, "You must enter something!"
+    end
+    
+    # Initialize needed variables
+    tokens = [] # Array containing all the tokens from input
+    pos = 0
+
+    # Tokenize entire input string
+    begin
+      curr_token = next_token(input, pos, ignore_whitespace)
+      if curr_token.type == "NoTokenFound"
+        raise LexerError, "Invalid Token: " + curr_token.value.to_s
+      else
+        tokens.push(curr_token)
+        pos = curr_token.pos + curr_token.value.length 
+      end
+    end while curr_token.type != "EOL"
+
+    return tokens
+  end
+
   # This method returns the next substring of input
   # that matches one of the inputted rules
   # - input: a String analyzed for the next token
@@ -54,8 +83,12 @@ class Lexer
   def next_token(input = "", pos = 0, ignore_whitespace = true)
     # First check if parser has reached the end of the string
     # or if pos simply has an invalid value (i.e. -1)
-    if pos >= input.length or pos < 0
+    if pos < 0
+      pos = 0
       return Token.new("NoTokenFound", input[pos...-1], pos)
+    end
+    if pos >= input.length
+      return Token.new("EOL", "", pos)
     end
 
     # Match the current position of the input string

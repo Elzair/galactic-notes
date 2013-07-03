@@ -66,7 +66,7 @@ class AST
   def insert(node = nil, curr_node = @root)
     # Ensure node is a valid node
     if node == nil or !node.is_a?(Node)
-      raise ParseError, "Error! Invalid node!"
+      raise ParserError, "Error! Invalid node!"
     end
 
     # If AST is empty, insert node at root 
@@ -74,10 +74,10 @@ class AST
       if node.is_root == true
         @root = node
       else
-        raise ParseError, "Invalid root node: " + node.to_s
+        raise ParserError, "Invalid root node: " + node.to_s
       end
     elsif curr_node == nil
-      raise ParseError, "Cannot add a subnode to a nil node!"
+      raise ParserError, "Cannot add a subnode to a nil node!"
     # If AST is nonempty, add node as a child node to curr_node
     else
       insert_child_node(node, curr_node)
@@ -92,10 +92,10 @@ class AST
       if curr_node.is_leaf == false
         curr_node.children.push(node)
       else
-        raise ParseError, "Cannot add child node to leaf node!"
+        raise ParserError, "Cannot add child node to leaf node!"
       end
     else
-      raise ParseError, "Cannot insert more than one root node!"
+      raise ParserError, "Cannot insert more than one root node!"
     end
   end
 
@@ -106,7 +106,7 @@ class AST
   def seek(attributes)
     result = seek_r(attributes, @root)
     if result == nil
-      raise ParseError, "No match found for " + attributes.to_s + "!"
+      raise ParserError, "No match found for " + attributes.to_s + "!"
     else
       return result
     end
@@ -122,7 +122,6 @@ class AST
     # equivalent to a corresponding attribute in curr_node
     match = true
     attributes.keys.each do |key|
-      #puts Node.public_instance_methods.to_s + " " + curr_node.send(key) + " " + attributes[key]
       if !Node.public_instance_methods.include?(key) || curr_node.send(key) != attributes[key]
         match = false 
       end
@@ -141,6 +140,7 @@ class AST
           return result 
         end
       end
+
       # Return nil if no child node (or subnode) matches
       return nil
     end
