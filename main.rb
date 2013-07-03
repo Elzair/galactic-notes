@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require './lexer.rb'
 require './parser.rb'
 require './vm.rb'
 
