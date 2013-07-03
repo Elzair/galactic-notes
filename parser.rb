@@ -12,26 +12,43 @@ class GalacticParser
     @vm = vm
     @ignore_case = ignore_case
     @history = []
-    @rules = {
-      #"How\\smany" => "HOWMANY",
-      #"How\\smuch" => "HOWMUCH",
-      "How" => "HOW",
-      "many" => "MANY",
-      "much" => "MUCH",
-      "is" => "IS",
-      "quit" => "QUIT",
-      "Credits" => "CREDITS",
-      "[[:alpha:]]+" => "VARIABLE",
-      "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
-      "\\?" => "QUESTION",
-      "\\s" => "WS",
-      "\n" => "EOL"
-    }
+    if @ignore_case
+      @rules = {
+        "HOW" => "HOW",
+        "MANY" => "MANY",
+        "MUCH" => "MUCH",
+        "IS" => "IS",
+        "QUIT" => "QUIT",
+        "CREDITS" => "CREDITS",
+        "[[:alpha:]]+" => "VARIABLE",
+        "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
+        "\\?" => "QUESTION",
+        "\\s" => "WS",
+        "\n" => "EOL"
+      }
+    else
+      @rules = {
+        "How" => "HOW",
+        "many" => "MANY",
+        "much" => "MUCH",
+        "is" => "IS",
+        "quit" => "QUIT",
+        "Credits" => "CREDITS",
+        "[[:alpha:]]+" => "VARIABLE",
+        "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
+        "\\?" => "QUESTION",
+        "\\s" => "WS",
+        "\n" => "EOL"
+      }
+    end
     @lexer = Lexer.new(@rules, false)
   end
 
   # This method parses and handles input from the user
   def parse_input(input = "")
+    if @ignore_case
+      input = input.upcase
+    end
     @output = []
     @history.push(input)
     @input = input
@@ -46,12 +63,6 @@ class GalacticParser
     curr_token = get_next_token(true, false)
 
     # Use curr_token to determine which rule to use
-    #if curr_token.type == "HOWMANY"
-    #  @tokens.push(curr_token)
-    #  how
-    #elsif curr_token.type == "HOWMUCH"
-    #  @tokens.push(curr_token)
-    #  how_much
     if curr_token.type == "HOW"
       @tokens.push(curr_token)
       how
@@ -236,11 +247,11 @@ class GalacticParser
   end
 
   # This is a convenience method to getting the next token from @lexer.
-  def get_next_token(skip_whitespace = true, auto_add = true)
-    if skip_whitespace
-      token = @lexer.next_token_no_ws(@input, @pos)
-    else
+  def get_next_token(ignore_whitespace = true, auto_add = true)
+    if ignore_whitespace
       token = @lexer.next_token(@input, @pos)
+    else
+      token = @lexer.next_token(@input, @pos, false)
     end
     if token == nil
       return token

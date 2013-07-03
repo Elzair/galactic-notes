@@ -40,35 +40,9 @@ class Lexer
     end
   end
 
-  # This method splits up the input string into a list of
-  # token objects according to the inputted rules.
-  #def tokenize(input = "")
-  #  pos = 0
-  #  tokens = []
-  #  # Process the input string into tokens.
-  #  until pos == input.length
-  #    # Match the current position of the input string
-  #    # against all rules to find the best match
-  #    old_pos = pos
-  #    @regexps.keys.each do |reg|
-  #      if input.index(@regexps[reg], pos) == pos
-  #        token = @regexps[reg].match(input, pos)
-  #        tokens.push(Token.new(reg, token, pos))
-  #        pos = pos + token.to_s.length
-  #        break
-  #      end
-  #    end 
-  #    # Raise error if no tokens were found
-  #    if pos == old_pos
-  #      raise LexerError, "Invalid token(s): " + input[pos..-1]
-  #    end
-  #  end
-  #  return tokens
-  #end 
-
   # This method returns the next substring of input
   # that matches one of the inputted rules
-  def next_token(input = "", pos = 0)
+  def next_token(input = "", pos = 0, ignore_whitespace = true)
     # First check if parser has reached the end of the string
     if pos >= input.length
       return Token.new("NoTokenFound", input[pos...-1], pos)
@@ -80,7 +54,12 @@ class Lexer
     @regexps.keys.each do |reg|
       if input.index(@regexps[reg], pos) == pos
         token = Token.new(reg, @regexps[reg].match(input, pos).to_s, pos)
-        return token
+        # If ignore_whitespace is true, return next non-whitespace token
+        if token.value.gsub(/\s+/, "") == ""
+          return next_token(input, pos + token.value.length, true)
+        else
+          return token
+        end
       end
     end 
 
@@ -88,20 +67,6 @@ class Lexer
     if token == nil
       token = Token.new("NoTokenFound", input[pos...-1], pos) 
       #raise LexerError, "Invalid token(s): " + input[pos..-1]
-    end
-  end
-
-  # This method returns the next non-whitespace token
-  def next_token_no_ws(input = "", pos = 0)
-    token = next_token(input, pos)
-    if token.type == "NoTokenFound"
-      return token
-    end
-    pos = token.pos + token.value.length
-    if token.type != "WS"
-      return token
-    else
-      return next_token_no_ws(input, pos)
     end
   end
 end
