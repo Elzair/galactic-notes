@@ -7,6 +7,7 @@ if __FILE__ == $0
   # First handle command line arguments
   ignore_case = false
   inputs = []
+  #STDOUT.sync = true
   ARGV.each do |a|
     if a == "-i"
       ignore_case = true
@@ -14,7 +15,7 @@ if __FILE__ == $0
       begin
         file = File.open(a)
         while !file.eof
-          inputs.push(file.readline)
+          inputs.push(file.readline.chomp)
         end
       rescue
         puts "Cannot open file: #{a}"
@@ -23,7 +24,7 @@ if __FILE__ == $0
       end
     end
   end
-  STDOUT.sync = true
+  STDIN.flush
   vm = VM.new
   parser = GalacticParser.new(vm, ignore_case)
   loop do
