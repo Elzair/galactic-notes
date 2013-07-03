@@ -23,6 +23,8 @@ end
 # This class analyzes an input string and separates it
 # into tokens defined by the inputted series of rules.
 class Lexer
+  # This method creates a new Lexer object
+  # - rules: a hash providing rules to match tokens in the language
   def initialize(rules)
     @rules = rules
     @regexps = {}
@@ -41,6 +43,9 @@ class Lexer
 
   # This method returns the next substring of input
   # that matches one of the inputted rules
+  # - input: a String analyzed for the next token
+  # - pos: a FixNum representing the position in input to began matching
+  # - ignore_whitespace: whether or not to skip over whitespace tokens
   def next_token(input = "", pos = 0, ignore_whitespace = true)
     # First check if parser has reached the end of the string
     if pos >= input.length
