@@ -28,6 +28,7 @@ class GalacticParser
 
   # This method parses and handles input from the user
   def parse_input(input = "")
+    @output = []
     @history.push(input)
     @input = input
     @tokens = []
@@ -71,16 +72,8 @@ class GalacticParser
     # Get next token.
     token = get_next_token
 
-    # Validate that the current token is a valid currency.
-    matched = false
-    @vm.load_type("CURRENCY").each do |currency|
-      if token.value == currency.name
-        matched = true
-        break
-      end
-    end
-    if !matched
-      raise ParseError, token.value + ' is an invalid currency!'
+    if token.type != "CREDITS"
+      raise ParseError, "How many of what?"
     end
 
     # Get next token.
@@ -88,14 +81,24 @@ class GalacticParser
 
     # Validate that current token has type "IS"
     if token.type != "IS"
-      raise ParseError, 'How many do what?'
+      raise ParseError, 'How many Credits do what?'
     end
 
     # Validate number 
-    galactic_number
+    token = galactic_number
 
     # Validate commodity
-    commodity
+    commodity(token, true)
+
+    # Verify final token is question mark
+    token = get_next_token(true, true)
+    if token.type != "QUESTION"
+      raise ParseError, "Are you asking me or telling me?"
+    end
+
+    if get_next_token != nil
+      raise ParseError, "I don't know what you're talking about!"
+    end
   end
 
   def assign
@@ -103,40 +106,60 @@ class GalacticParser
     
   end
 
-
-
-  def galactic_number
-    # Use a different lexer to parse roman numerals
-    number = "" 
-    old_pos = @pos   
+  def galactic_number(validate = true)
     loop do
       token = get_next_token(true, false)
-      if token.type == "NUMERAL" and !token.base
-        @vm.get_type("NUMERAL").each do |tok|
-          if tok.name == token.value and !tok.base 
-            number = number + tok.value
-            break
-          end 
+      if token.type == "VARIABLE"
+        if validate == true
+          @vm.load_type("NUMERAL").each do |tok|
+            if tok.name == token.value and !tok.base
+              token.type = "GALACTIC"
+              @tokens.push(token)
+              break
+            end
+          end
+          return token
+        else
+          @tokens.push(token)
         end
-        raise ParseError, token.name + " is not defined!"
-      elsif number == "" 
-        raise ParseError, "Galactic numerals needed!"
       else
-        @tokens.push(Token.new("NUMBER", number, old_pos))
         break
       end
     end
+    # Use a different lexer to parse roman numerals
+    #number = "" 
+    #old_pos = @pos   
+    #loop do
+    #  token = get_next_token(true, false)
+    #  if token.type == "NUMERAL" and !token.base
+    #    @vm.get_type("NUMERAL").each do |tok|
+    #      if tok.name == token.value and !tok.base 
+    #        number = number + tok.value
+    #        break
+    #      end 
+    #    end
+    #    raise ParseError, token.name + " is not defined!"
+    #  elsif number == "" 
+    #    raise ParseError, "Galactic numerals needed!"
+    #  else
+    #    @tokens.push(Token.new("NUMBER", number, old_pos))
+    #    break
+    #  end
+    #end
     #@tokens.push(Token.new()
   end
 
-  def commodity(token = nil)
+  def commodity(token = nil, validate = true)
     if token == nil
       token = get_next_token(true, false)
     end
-    @vm.get_type("COMMODITY").each do |tok|
-      if tok.name == token.value and !tok.base
-        return tok
+    if validate == true
+      @vm.load_type("COMMODITY").each do |tok|
+        if tok.name == token.value and !tok.base
+          @tokens.push(token)
+        end
       end
+      raise ParseError, "This Commodity does not exist!"
     end
   end
 
