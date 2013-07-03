@@ -46,8 +46,8 @@ class Main
       }
     end
     @lexer = Lexer.new(@rules, false) 
+    @parser = Parser.new(@lexer, @ignore_case) 
     @vm = VM.new
-    @parser = GalacticParser.new(@vm, @ignore_case) 
   end
 end
 

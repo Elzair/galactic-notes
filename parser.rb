@@ -3,45 +3,47 @@ require './lexer.rb'
 class ParseError < RuntimeError
 end
 
-# This is an LL(1) Recursive Descent Parser for the
-# Galactic Notes program. It can be invoked with the
-# Galactic Input grammar or the Roman Numeral Grammar 
-class GalacticParser
+# This is an LL(1) [1] Recursive Descent Parser for the Galactic Notes program.  
+class Parser
   # Create new parser object
-  def initialize(vm = nil, ignore_case = false)
-    @vm = vm
+  def initialize(lexer = nil, ignore_case = false)
+    if lexer == nil or !lexer.responds_to?("next_token")
+      raise ParseError, "I need a valid lexical analyzer!"
+    else
+      @lexer = lexer
+    end
     @ignore_case = ignore_case
     @history = []
-    if @ignore_case
-      @rules = {
-        "HOW" => "HOW",
-        "MANY" => "MANY",
-        "MUCH" => "MUCH",
-        "IS" => "IS",
-        "QUIT" => "QUIT",
-        "CREDITS" => "CREDITS",
-        "[[:alpha:]]+" => "VARIABLE",
-        "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
-        "\\?" => "QUESTION",
-        "\\s" => "WS",
-        "\n" => "EOL"
-      }
-    else
-      @rules = {
-        "How" => "HOW",
-        "many" => "MANY",
-        "much" => "MUCH",
-        "is" => "IS",
-        "quit" => "QUIT",
-        "Credits" => "CREDITS",
-        "[[:alpha:]]+" => "VARIABLE",
-        "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
-        "\\?" => "QUESTION",
-        "\\s" => "WS",
-        "\n" => "EOL"
-      }
-    end
-    @lexer = Lexer.new(@rules)
+    #if @ignore_case
+    #  @rules = {
+    #    "HOW" => "HOW",
+    #    "MANY" => "MANY",
+    #    "MUCH" => "MUCH",
+    #    "IS" => "IS",
+    #    "QUIT" => "QUIT",
+    #    "CREDITS" => "CREDITS",
+    #    "[[:alpha:]]+" => "VARIABLE",
+    #    "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
+    #    "\\?" => "QUESTION",
+    #    "\\s" => "WS",
+    #    "\n" => "EOL"
+    #  }
+    #else
+    #  @rules = {
+    #    "How" => "HOW",
+    #    "many" => "MANY",
+    #    "much" => "MUCH",
+    #    "is" => "IS",
+    #    "quit" => "QUIT",
+    #    "Credits" => "CREDITS",
+    #    "[[:alpha:]]+" => "VARIABLE",
+    #    "[0-9]+\\.[0-9]+|[0-9]+" => "NUMBER",
+    #    "\\?" => "QUESTION",
+    #    "\\s" => "WS",
+    #    "\n" => "EOL"
+    #  }
+    #end
+    #@lexer = Lexer.new(@rules)
   end
 
   # This method parses and handles input from the user
