@@ -4,7 +4,7 @@ class Token
   attr_accessor :value
   attr_accessor :pos
 
-  # Create a new Token
+  # This method creates a new Token object.
   def initialize(type = "", value = "", pos = -1)
     @type = type
     @value = value
@@ -23,9 +23,8 @@ end
 # This class analyzes an input string and separates it
 # into tokens defined by the inputted series of rules.
 class Lexer
-  def initialize(rules, ignore_whitespace = true)
+  def initialize(rules)
     @rules = rules
-    @ignore_whitespace = ignore_whitespace
     @regexps = {}
     if @rules.respond_to?(:has_key?)
       # Create a regular expression for each individual rule. 
