@@ -106,10 +106,11 @@ class Main
     end
     begin
       result = @parser.parse_input(inp)
-      result.each do |token|
-        output.print(token.to_s + " ")
-      end
-      output.puts("")
+      #result.each do |token|
+      #  output.print(token.to_s + " ")
+      #end
+      #output.puts("")
+      output.puts(result.to_s)
     rescue ParseError => e
       err.puts e.message
     end
