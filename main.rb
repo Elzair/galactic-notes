@@ -11,6 +11,8 @@ end
 # and manages the interactions between the lexical analyzer, the parser and the
 # virtual machine. 
 class Main
+  # This method creates a new Main object.
+  # - options: a Hash representing the passed options
   def initialize(options)
     # First handle any options passed
     if options.respond_to?("has_key")
@@ -59,6 +61,9 @@ class Main
 
   # This method processes an array of input strings 
   # and outputs them to output_stream
+  # - inputs: an Array of input strings
+  # - output: a stream used for output
+  # - err: a stream used for reporting errors
   def batch_process(inputs = [], output = STDOUT, err = STDERR)
     # First ensure inputs is an array
     if !inputs.respond_to?("each")
@@ -72,6 +77,9 @@ class Main
   # This method processes one statement from input
   # (which can be a stream or a string) and outputs
   # the result to output. 
+  # - input: a String or Stream containing the users input
+  # - output: a stream used for output
+  # - err: a stream used for reporting errors
   def process_input(input = STDIN, output = STDOUT, err = STDERR)
     # First make sure input, output and err are valid streams/strings
     if input.respond_to?("gets")
@@ -104,6 +112,7 @@ class Main
   end
 end
 
+# This block is called when this file is invoked directly.
 if __FILE__ == $0
   # First handle command line arguments
   options = {} # Stores values of command line flags

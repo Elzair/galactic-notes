@@ -1,9 +1,16 @@
 # This class represents a variable stored in the virtual machine.
 class Variable
-  attr_accessor :name
-  attr_accessor :value
-  attr_accessor :type
-  attr_accessor :base
+  attr_accessor :name   # Name of variable
+  attr_accessor :value  # Value of variable
+  attr_accessor :type   # Type of variable
+  attr_accessor :base   # Is variable a base variable or reference variable?
+
+  # This method creates a new variable.
+  # - name: a String containing the name of the variable
+  # - value: an Object containg the value of the variable
+  #          (if value is a string, the variable is a reference)
+  # - type: a String containing the type of the variable
+  # - base: whether the variable is a base variable or reference variable
   def initialize(name = "", value = nil, type = "NONE", base = false)
     @name = name
     @value = value
@@ -12,11 +19,16 @@ class Variable
   end
 end
 
+# This class represents an error encountered by VM during its operations
 class VMError < RuntimeError
 end
 
 # This class represents the virtual machine used to store & retrieve variables.
+# It has several registers, a stack for computing roman numerals, and a Hash
+# containing all the pre-defined variables.
 class VM
+  # This method creates a new VM object.
+  # - variables: a Hash representing the 'memory locations' to pre-load
   def initialize(variables = {})
     roman_numerals = { 
       "I" => Variable.new("I", 1, "NUMERAL", true),
@@ -32,6 +44,7 @@ class VM
   end
 
   # This method retrieves the variable indicated by name.
+  # - name: a String containing the name of the variable to load
   def load(name = "")
     if @variables.has_key?(name)
       return @variables[name]
@@ -41,6 +54,7 @@ class VM
   end
 
   # This method returns all variables of a given type.
+  # - type: a String containing the type of variable to return
   def load_type(type = "")
     vars = []
     @variables.values.each do |var|
@@ -50,7 +64,8 @@ class VM
     end
   end
 
-  # This method stores a new variable in the VM
+  # This method stores a new variable in the VM.
+  # - variable: a Variable object containing the information to store
   def store(variable = nil)
     if @variables.has_key?(variable.name)
       raise VMError, variable.name + " already exists!"

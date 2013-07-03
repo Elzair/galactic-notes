@@ -1,10 +1,13 @@
 # Class representing a lexical token
 class Token
-  attr_accessor :type
-  attr_accessor :value
-  attr_accessor :pos
+  attr_accessor :type   # the type of token
+  attr_accessor :value  # the value of token
+  attr_accessor :pos    # the position of the token in the input stream
 
   # This method creates a new Token object.
+  # - type: a String containing the type of token
+  # - value: a String containing the value of a token
+  # - pos: a FixNum representing a token's starting position in an input string
   def initialize(type = "", value = "", pos = -1)
     @type = type
     @value = value
@@ -71,7 +74,6 @@ class Lexer
     # Return Error token if no other tokens were found
     if token == nil
       token = Token.new("NoTokenFound", input[pos...-1], pos) 
-      #raise LexerError, "Invalid token(s): " + input[pos..-1]
     end
   end
 end

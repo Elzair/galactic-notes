@@ -6,7 +6,7 @@ end
 # This class is an LL(1) [1] Recursive Descent Parser for the Galactic Notes program.  
 class Parser
   # This method creates a new Parser object.
-  # - lexer: the object representing the lexical analyzer to use
+  # - lexer: an object representing the lexical analyzer to use
   # - ignore_case: whether or not input is case sensitive
   def initialize(lexer = nil, ignore_case = false)
     # Ensure @lexer is a valid lexical analyzer
@@ -182,7 +182,6 @@ class Parser
   # This method parses the statement "{ defined_numeral }+ commodity IS number" 
   # - curr_token: a Token object representing the current token
   def assign_value(curr_token = nil)
-
     # First handler errors.
     if curr_token.type != "VARIABLE"
       raise ParseError, "I need a variable!"
