@@ -1,5 +1,9 @@
 # Class representing a lexical token
 class Token
+  attr_accessor :type
+  attr_accessor :value
+  attr_accessor :pos
+
   # Create a new Token
   def initialize(type = "", value = "", pos = -1)
     @type = type
@@ -7,17 +11,17 @@ class Token
     @pos = pos
   end
 
-  def type
-    return @type
-  end
+  #def type
+  #  return @type
+  #end
 
-  def value
-    return @value
-  end
+  #def value
+  #  return @value
+  #end
 
-  def pos
-    return @pos
-  end
+  #def pos
+  #  return @pos
+  #end
 
   def to_s
     return @type + " " + @value.to_s + " " + @pos.to_s
@@ -38,6 +42,9 @@ class Lexer
     if @rules.respond_to?(:has_key?)
       # Create a regular expression for each individual rule. 
       @rules.keys.each do |rule|
+        if rule == "NoTokenFound"
+          raise LexerError, "You cannot define a grammar rule called 'NoTokenFound'!"
+        end
         @regexps[@rules[rule]] = Regexp.new(rule)
       end
     else
@@ -86,9 +93,10 @@ class Lexer
         return token
       end
     end 
-    # Raise error if no tokens were found
-    if token == nil 
-      raise LexerError, "Invalid token(s): " + input[pos..-1]
+    # Return Error token if no other tokens were found
+    if token == nil
+      token = Token.new("NoTokenFound", input[pos...-1], pos) 
+      #raise LexerError, "Invalid token(s): " + input[pos..-1]
     end
   end
 

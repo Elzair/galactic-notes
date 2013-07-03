@@ -48,84 +48,217 @@ class GalacticParser
     #puts token.to_s
     #@tokens.push(token)
     #@pos = token.pos + token.value.length
-    token = get_next_token(false)
+    curr_token = get_next_token(false, false)
 
-    # Use token to determine which rule to use.
-    if token.type == "HOWMANY"
+    # Use curr_token to determine which rule to use
+    if curr_token.type == "HOWMANY"
+      @tokens.push(curr_token)
       how_many
-    elsif token.type == "HOWMUCH"
+    elsif curr_token.type == "HOWMUCH"
+      @tokens.push(curr_token)
       how_much
-    elsif token.type == "QUIT"
+    elsif curr_token.type == "QUIT"
+      @tokens.push(curr_token)
       quit
-    elsif token.type == "VARIABLE"
-      assign
+    elsif curr_token.type == "VARIABLE"
+      assign(curr_token)
     else
       raise ParseError, "Invalid input: " + input
     end
   end
 
   def quit
-    return ""
+    # This method handles a call to quit the program.
+    handle_end
   end
 
   def how_many
-    # Get next token.
-    token = get_next_token
-
-    if token.type != "CREDITS"
+    # Validate the sentence begins with "How many Credits is".
+    curr_token = get_next_token
+    if curr_token.type != "CREDITS"
       raise ParseError, "How many of what?"
     end
 
-    # Get next token.
-    token = get_next_token
-
-    # Validate that current token has type "IS"
-    if token.type != "IS"
-      raise ParseError, 'How many Credits do what?'
+    curr_token = get_next_token
+    if curr_token.type != "IS"
+      raise ParseError, "How many Credits do what?"
     end
+    
+    # Validate the rest of the sentence
+    prev_token = nil
+    curr_token = get_next_token(true, false)
+    while curr_token.type != "QUESTION"
+      if curr_token.type != "VARIABLE"
+        raise ParseError, "I don't know what " + curr_token.value + " is!"
+      end
+      prev_token = curr_token
+      curr_token = get_next_token(true, false)
+      if curr_token.type == "QUESTION"
+        prev_token.type = "COMMODITY"
+      else
+        prev_token.type = "GALNUM"
+      end
+      @tokens.push(prev_token)
+    end
+
+    # Add "?" to @tokens
+    @tokens.push(curr_token)
 
     # Validate number 
-    token = galactic_number
+    #token = galactic_number
 
     # Validate commodity
-    commodity(token, true)
+    #commodity(token, true)
 
     # Verify final token is question mark
-    token = get_next_token(true, true)
-    if token.type != "QUESTION"
-      raise ParseError, "Are you asking me or telling me?"
+    #token = get_next_token(true, true)
+    #if token.type != "QUESTION"
+    #  raise ParseError, "Are you asking me or telling me?"
+    #end
+
+    handle_end
+  end
+
+  def howmuch
+    # This method parses the statement "How much is [ numeral ] ?".
+
+    # Make sure statement begins with "How much is"
+    if get_next_token.type != "IS"
+      raise ParseError, "I don't know what you're talking about!"
     end
 
-    if get_next_token != nil
+    # Make sure the rest of the statement is one or more Galactic Numerals
+    curr_token = get_next_token(true, false)
+    while curr_token.type != "QUESTION"
+      if curr_token.type == "VARIABLE"
+        curr_token.type = "GALNUM"
+      else
+        raise ParseError, "I don't know what " + curr_token.value + " is!"
+      end
+      @tokens.push(curr_token)
+      curr_token = get_next_token(true, false)
+    end
+
+    # Add "?" to @tokens
+    @tokens.push(curr_token)
+
+    handle_end
+  end
+
+  def assign(curr_token = nil)
+    # This method handles assignment statements.
+
+    # First handle errors
+    if curr_token == nil
+      raise ParseError, "I don't know what you're talking about!"
+    elsif curr_token.type != "VARIABLE"
+      raise ParseError, "I don't know what " + curr_token.value + " is!"
+    end
+
+    # The first variable in an assignment statement should always be
+    # a Galactic Numeral, so we can declare it here.
+    curr_token.type = "GALNUM"
+    @tokens.push(curr_token)
+
+    # Use assign_variable if only one variable is present
+    # Use assign_value if otherwise
+    curr_token = get_next_token(true, false)
+    if curr_token.type == "IS"
+      assign_variable(curr_token)
+    elsif curr_token.type == "VARIABLE"
+      assign_value(curr_token)
+    else
       raise ParseError, "I don't know what you're talking about!"
     end
   end
 
-  def assign
-    # Validate number
+  def assign_variable(curr_token = nil)
+    # This method parses the statement "variable is defined_numeral".
+
+    # First handle errors
+    if curr_token == nil
+      raise ParseError, "I need a variable!"
+    end
+
+    # Add "IS" to @tokens
+    @tokens.push(curr_token)
     
+    curr_token = get_next_token(true, false)
+    if curr_token.type == "VARIABLE"
+      curr_token.type = "GALNUM"
+      @tokens.push(curr_token)
+    else
+      raise ParseError, "I don't know what " + curr_token.value + " is!"
+    end
+
+    handle_end
   end
 
-  def galactic_number(validate = true)
-    loop do
-      token = get_next_token(true, false)
-      if token.type == "VARIABLE"
-        if validate == true
-          @vm.load_type("NUMERAL").each do |tok|
-            if tok.name == token.value and !tok.base
-              token.type = "GALACTIC"
-              @tokens.push(token)
-              break
-            end
-          end
-          return token
-        else
-          @tokens.push(token)
-        end
-      else
-        break
-      end
+  def assign_value(curr_token = nil)
+    # This method parses the statement "{ defined_numeral }+ commodity IS number" 
+
+    # First handler errors.
+    if curr_token.type != "VARIABLE"
+      raise ParseError, "I need a variable!"
     end
+   
+    # Validate up until the "IS" token
+    while curr_token.type != "IS"
+      prev_token = curr_token
+      curr_token = get_next_token(true, false)
+      if curr_token.type == "VARIABLE"
+        prev_token.type = "GALNUM"
+      elsif curr_token.type == "IS"
+        prev_token.type = "COMMODITY"
+      else
+        raise ParseError, "I don't know what " + curr_token.value + " is!"
+      end
+      @tokens.push(prev_token)
+    end
+
+    # Add "IS" to @tokens
+    @tokens.push(curr_token)
+
+    if get_next_token.type != "NUMBER"
+      raise ParseError, "I don't know what you're talking about!"
+    end
+
+    if get_next_token.type != "CREDITS"
+      raise ParseError, "I don't know what you're talking about!"
+    end
+
+    handle_end
+  end
+
+  def handle_end
+    # This method handles the end of an input statement
+    if get_next_token != nil
+      raise ParseError, "I don't know what you're talking about!"
+    else
+      puts @tokens.to_s
+    end
+  end
+
+  #def galactic_number(validate = true)
+  #  loop do
+  #    token = get_next_token(true, false)
+  #    if token.type == "VARIABLE"
+  #      if validate == true
+  #        @vm.load_type("NUMERAL").each do |tok|
+  #          if tok.name == token.value and !tok.base
+  #            token.type = "GALACTIC"
+  #            @tokens.push(token)
+  #            break
+  #          end
+  #        end
+  #        return token
+  #      else
+  #        @tokens.push(token)
+  #      end
+  #    else
+  #      break
+  #    end
+  #  end
     # Use a different lexer to parse roman numerals
     #number = "" 
     #old_pos = @pos   
@@ -147,21 +280,21 @@ class GalacticParser
     #  end
     #end
     #@tokens.push(Token.new()
-  end
+  #end
 
-  def commodity(token = nil, validate = true)
-    if token == nil
-      token = get_next_token(true, false)
-    end
-    if validate == true
-      @vm.load_type("COMMODITY").each do |tok|
-        if tok.name == token.value and !tok.base
-          @tokens.push(token)
-        end
-      end
-      raise ParseError, "This Commodity does not exist!"
-    end
-  end
+ # def commodity(token = nil, validate = true)
+ #   if token == nil
+ #     token = get_next_token(true, false)
+ #   end
+ #   if validate == true
+ #     @vm.load_type("COMMODITY").each do |tok|
+ #       if tok.name == token.value and !tok.base
+ #         @tokens.push(token)
+ #       end
+ #     end
+ #     raise ParseError, "This Commodity does not exist!"
+ #   end
+ # end
 
   # This is a convenience method to getting the next
   # token from Lexer.
