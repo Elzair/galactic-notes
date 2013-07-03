@@ -1,5 +1,6 @@
 require './astree.rb'
 
+# This class represents an error encountered by Parser during its operations.
 class ParseError < RuntimeError
 end
 
@@ -156,6 +157,7 @@ class Parser
   end
 
   # This method handles assignment statements.
+  # - curr_token: a Token object representing the current token
   def assign(curr_token = nil)
     # First handle errors
     if curr_token == nil
