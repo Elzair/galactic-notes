@@ -1,27 +1,22 @@
-require './astree.rb'
 
 # This class represents an error encountered by Parser during its operations.
 class ParserError < RuntimeError
 end
 
-# This class is an LL(2) [1] Recursive Descent Parser for the Galactic Notes program.  
+# This class represents an LL(2) [1] Recursive Descent Parser for
+# the Galactic Notes program.  
 class Parser
   # This method creates a new Parser object.
-  # - lexer: an object representing the lexical analyzer to use
-  def initialize()
-    # Ensure @lexer is a valid lexical analyzer
-    #if lexer == nil or !lexer.respond_to?("next_token")
-    #  raise ParserError, "I need a valid lexical analyzer!"
-    #else
-    #  @lexer = lexer
-    #end
+  # - ast_class: the name of the class representing the Abstract Syntax Tree
+  def initialize(ast_class)
+    @ast_class = ast_class
   end
 
   # This method parses and handles input from the user
   # - input: a String containing the user's input
   def parse(tokens = [])
     # Initialize needed variables to a known state
-    @output = AST.new
+    @output = @ast_class.new
     #@input = input
     @tokens = tokens
     @pos = 0
@@ -40,10 +35,8 @@ class Parser
 
     # Use curr_token to determine which rule to use
     if curr_token.type == "HOW"
-      #@tokens.push(curr_token)
       how
     elsif curr_token.type == "QUIT"
-      #@tokens.push(curr_token)
       quit
     elsif curr_token.type == "VARIABLE"
       assign(curr_token)
@@ -108,12 +101,8 @@ class Parser
         curr_node = Node.new("GALNUMERAL", prev_token.value, [], false, true)
         @output.insert(curr_node, @output.seek({:name => "GALNUMBER"}))
       end
-      #@tokens.push(prev_token)
     end
 
-    # Add "?" to @tokens
-    #@tokens.push(curr_token)
-    
     handle_end
   end
 
@@ -122,7 +111,6 @@ class Parser
     # Make sure statement begins with "How much is"
     if get_next_token.type != "IS"
       raise ParserError, "I don't know what you're talking about!"
-      #raise ParserError, "It's in how_much!"
     end
 
     # Add HOWMUCH & GALNUMBER nodes to @output
@@ -141,12 +129,8 @@ class Parser
       else
         raise ParserError, "I don't know what " + curr_token.value + " is!"
       end
-      #@tokens.push(curr_token)
       curr_token = get_next_token
     end
-
-    # Add "?" to @tokens
-    #@tokens.push(curr_token)
 
     handle_end
   end
@@ -157,7 +141,6 @@ class Parser
     # First handle errors
     if curr_token == nil
       raise ParserError, "I don't know what you're talking about!"
-      #raise ParserError, "It's in assign!"
     elsif curr_token.type != "VARIABLE"
       raise ParserError, "I don't know what " + curr_token.value + " is!"
     end
@@ -169,7 +152,6 @@ class Parser
     # The first variable in an assignment statement should always be
     # a Galactic Numeral, so we can declare it here.
     curr_token.type = "GALNUM"
-    #@tokens.push(curr_token)
     curr_node = Node.new("GALNUMERAL", curr_token.value, [], false, true)
 
     # Use assign_variable if only one variable is present
@@ -189,7 +171,6 @@ class Parser
       assign_value(curr_token)
     else
       raise ParserError, "I don't know what you're talking about!"
-      #raise ParserError, "It's in assign 2!"
     end
   end
 
@@ -201,13 +182,9 @@ class Parser
       raise ParserError, "I need a variable!"
     end
 
-    # Add "IS" to @tokens
-    #@tokens.push(curr_token)
-    
     curr_token = get_next_token
     if curr_token.type == "VARIABLE"
       curr_token.type = "GALNUM"
-      #@tokens.push(curr_token)
       curr_node = Node.new("GALNUMERAL", curr_token.value, [], false, true)
       @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
     else
@@ -240,16 +217,11 @@ class Parser
       else
         raise ParserError, "I don't know what " + curr_token.value + " is!"
       end
-      #@tokens.push(prev_token)
     end
-
-    # Add "IS" to @tokens
-    #@tokens.push(curr_token)
 
     curr_token = get_next_token
     if curr_token.type != "NUMBER"
       raise ParserError, "I don't know what you're talking about!"
-      #raise ParserError, "It's in assign_variable!"
     else
       curr_node = Node.new("NUMBER", curr_token.value, [], false, true)
       @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
@@ -257,7 +229,6 @@ class Parser
 
     if get_next_token.type != "CREDITS"
       raise ParserError, "I don't know what you're talking about!"
-      #raise ParserError, "It's in assign_variable 2!"
     end
 
     handle_end
@@ -267,29 +238,11 @@ class Parser
   def handle_end
     if get_next_token.type != "EOL"
       raise ParserError, "I don't know what you're talking about!"
-      #raise ParserError, "It's in handle_end!"
-    #else
-    #  puts @tokens.to_s
     end
   end
 
   # This is a convenience method to getting the next token from @lexer.
-  # - ignore_whitespace: whether or not to skip over whitespace tokens
-  # - auto_add: whether or not to automatically add token to @tokens
-  #def get_next_token(ignore_whitespace = true, auto_add = true)
   def get_next_token
-    #if ignore_whitespace
-    #  token = @lexer.next_token(@input, @pos)
-    #else
-    #  token = @lexer.next_token(@input, @pos, false)
-    #end
-    #if token == nil
-    #  return token
-    #end
-    #if auto_add
-    #  #@tokens.push(token)
-    #end
-    #@pos = token.pos + token.value.length
     token = @tokens[@pos]
     @pos += 1
     return token
@@ -300,4 +253,3 @@ end
 # a commodity variable it is not possible to determine whether a VARIABLE 
 # returned by the lexical analyzer is really of type NUMERAL or COMMODITY
 # without seeing if the next token starts the next part of the statement.
-

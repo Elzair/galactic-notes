@@ -58,7 +58,8 @@ class Main
     end
     @history = []
     @lexer = Lexer.new(@lexer_rules) 
-    @parser = Parser.new 
+    ast_class = AST
+    @parser = Parser.new(ast_class)
     @vm = VM.new
   end
 
