@@ -3,7 +3,7 @@ require './lexer.rb'
 class ParseError < RuntimeError
 end
 
-# This class is an LL(1) [1] Recursive Descent Parser for the Galactic Notes program.  
+# This class is an LL(2) [1] Recursive Descent Parser for the Galactic Notes program.  
 class Parser
   # This method creates a new Parser object.
   # - lexer: an object representing the lexical analyzer to use
@@ -248,4 +248,9 @@ class Parser
     return token
   end
 end
+
+# [1] Since several statements accept a series of numerals followed by 
+# a commodity variable it is not possible to determine whether a VARIABLE 
+# returned by the lexical analyzer is really of type NUMERAL or COMMODITY
+# without seeing if the next token starts the next part of the statement.
 
