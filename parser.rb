@@ -13,8 +13,11 @@ class GalacticParser
     @ignore_case = ignore_case
     @history = []
     @rules = {
-      "How\\smany" => "HOWMANY",
-      "How\\smuch" => "HOWMUCH",
+      #"How\\smany" => "HOWMANY",
+      #"How\\smuch" => "HOWMUCH",
+      "How" => "HOW",
+      "many" => "MANY",
+      "much" => "MUCH",
       "is" => "IS",
       "quit" => "QUIT",
       "Credits" => "CREDITS",
@@ -40,15 +43,18 @@ class GalacticParser
   # This method matches the top level rule for the Galactic Notes input grammar.
   def statement
     # Get first token
-    curr_token = get_next_token(false, false)
+    curr_token = get_next_token(true, false)
 
     # Use curr_token to determine which rule to use
-    if curr_token.type == "HOWMANY"
+    #if curr_token.type == "HOWMANY"
+    #  @tokens.push(curr_token)
+    #  how
+    #elsif curr_token.type == "HOWMUCH"
+    #  @tokens.push(curr_token)
+    #  how_much
+    if curr_token.type == "HOW"
       @tokens.push(curr_token)
-      how_many
-    elsif curr_token.type == "HOWMUCH"
-      @tokens.push(curr_token)
-      how_much
+      how
     elsif curr_token.type == "QUIT"
       @tokens.push(curr_token)
       quit
@@ -62,6 +68,17 @@ class GalacticParser
   # This method parses a call to quit the program.
   def quit
     handle_end
+  end
+
+  def how
+    curr_token = get_next_token
+    if curr_token.type == "MANY"
+      how_many
+    elsif curr_token.type == "MUCH"
+      how_much
+    else
+      raise ParseError, "I don't know what you're talking about!"
+    end
   end
 
   # This method parses the statement "How many Credits is [ numeral ] commodity ?".
