@@ -22,6 +22,7 @@ class Parser
   # This method parses and handles input from the user
   # - input: a String containing the user's input
   def parse_input(input = "")
+    # Initialize needed variables to a known state
     if @ignore_case
       input = input.upcase
     end
@@ -30,7 +31,11 @@ class Parser
     @input = input
     @tokens = []
     @pos = 0
+
+    # Process input
     statement
+
+    # Return result
     return @tokens
   end
 

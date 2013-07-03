@@ -25,7 +25,7 @@ class Main
     end
 
     # Next initialize Lexical Analyzer, Parser and VM
-    if @ignore_case == true
+    if @ignore_case == true # Case Insensitive Rules
      @lexer_rules = {
         "HOW" => "HOW",
         "MANY" => "MANY",
@@ -39,7 +39,7 @@ class Main
         "\\s" => "WS",
         "\n" => "EOL"
       }
-    else
+    else # Case Sensitive Rules
       @lexer_rules = {
         "How" => "HOW",
         "many" => "MANY",
@@ -105,7 +105,11 @@ class Main
       output.puts(inp) # Display input just as if it were typed
     end
     begin
-      @parser.parse_input(inp)
+      result = @parser.parse_input(inp)
+      result.each do |token|
+        output.print(token.to_s + " ")
+      end
+      output.puts("")
     rescue ParseError => e
       err.puts e.message
     end
