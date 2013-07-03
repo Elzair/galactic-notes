@@ -48,7 +48,8 @@ class Lexer
   # - ignore_whitespace: whether or not to skip over whitespace tokens
   def next_token(input = "", pos = 0, ignore_whitespace = true)
     # First check if parser has reached the end of the string
-    if pos >= input.length
+    # or if pos simply has an invalid value (i.e. -1)
+    if pos >= input.length or pos < 0
       return Token.new("NoTokenFound", input[pos...-1], pos)
     end
 

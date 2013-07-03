@@ -52,7 +52,7 @@ class Main
         "\n" => "EOL"
       }
     end
-    @lexer = Lexer.new(@lexer_rules, false) 
+    @lexer = Lexer.new(@lexer_rules) 
     @parser = Parser.new(@lexer, @ignore_case) 
     @vm = VM.new
   end

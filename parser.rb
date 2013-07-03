@@ -3,9 +3,11 @@ require './lexer.rb'
 class ParseError < RuntimeError
 end
 
-# This is an LL(1) [1] Recursive Descent Parser for the Galactic Notes program.  
+# This class is an LL(1) [1] Recursive Descent Parser for the Galactic Notes program.  
 class Parser
-  # Create new parser object
+  # This method creates a new Parser object.
+  # - lexer: the object representing the lexical analyzer to use
+  # - ignore_case: whether or not input is case sensitive
   def initialize(lexer = nil, ignore_case = false)
     # Ensure @lexer is a valid lexical analyzer
     if lexer == nil or !lexer.respond_to?("next_token")
@@ -18,6 +20,7 @@ class Parser
   end
 
   # This method parses and handles input from the user
+  # - input: a String containing the user's input
   def parse_input(input = "")
     if @ignore_case
       input = input.upcase
@@ -50,11 +53,12 @@ class Parser
     end
   end
 
-  # This method parses a call to quit the program.
+  # This method parses a statement to quit the program.
   def quit
     handle_end
   end
 
+  # This method parses a query statement.
   def how
     curr_token = get_next_token
     if curr_token.type == "MANY"
@@ -154,8 +158,8 @@ class Parser
   end
 
   # This method parses the statement "variable is defined_numeral".
+  # - curr_token: a Token object representing the current token
   def assign_variable(curr_token = nil)
-
     # First handle errors
     if curr_token == nil
       raise ParseError, "I need a variable!"
@@ -175,8 +179,9 @@ class Parser
     handle_end
   end
 
+  # This method parses the statement "{ defined_numeral }+ commodity IS number" 
+  # - curr_token: a Token object representing the current token
   def assign_value(curr_token = nil)
-    # This method parses the statement "{ defined_numeral }+ commodity IS number" 
 
     # First handler errors.
     if curr_token.type != "VARIABLE"
@@ -221,15 +226,17 @@ class Parser
   end
 
   # This is a convenience method to getting the next token from @lexer.
+  # - ignore_whitespace: whether or not to skip over whitespace tokens
+  # - auto_add: whether or not to automatically add token to @tokens
   def get_next_token(ignore_whitespace = true, auto_add = true)
     if ignore_whitespace
       token = @lexer.next_token(@input, @pos)
     else
       token = @lexer.next_token(@input, @pos, false)
     end
-    if token == nil
-      return token
-    end
+    #if token == nil
+    #  return token
+    #end
     if auto_add
       @tokens.push(token)
     end
