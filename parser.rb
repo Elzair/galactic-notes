@@ -10,6 +10,7 @@ class GalacticParser
   # Create new parser object
   def initialize(vm = nil, ignore_case = false)
     @vm = vm
+    @ignore_case = ignore_case
     @history = []
     @rules = {
       "How\\smany" => "HOWMANY",
