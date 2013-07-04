@@ -59,8 +59,13 @@ class Translator
 
     # Generate code for a valid HOWMANY query
     if curr_node.name == "HOWMANY"
-      if curr_node.children[0].name == "GALNUMBER" and \
-         curr_node.children[1].name == "COMMODITY"
+      if curr_node.children.length != 2
+        raise @err_class, "HOWMANY statement requires two child nodes!"
+      elsif curr_node.children[0].name != "GALNUMBER"
+        raise @err_class, "Left node must be a GALNUMBER!"
+      elsif curr_node.children[1].name != "COMMODITY"
+        raise @err_class, "Right node must be a COMMODITY!"
+      else
         @code.push("MOV $ar $rr") # Move contents of gp register #1 into return register
         @code.push("MUL $br $ar") # Multiply gp register #1 by gp register #2
         # Move contents of memory location into gp register #1
@@ -73,12 +78,16 @@ class Translator
         end
         out_str = out_str + curr_node.children[1].value + " is $rr Credits"
         @code.push("LOAD '#{out_str}'") # Load out_str into string register
-      else
-        raise @err_class, "Malformed HOWMANY statement!"
+      #else
+      #  raise @err_class, "Malformed HOWMANY statement!"
       end
     # Generate code for a valid HOWMUCH query
     elsif curr_node.name == "HOWMUCH"
-      if curr_node.children[0].name == "GALNUMBER"
+      if curr_node.children.length != 1
+        raise @err_class, "HOWMUCH requires one child node!"
+      elsif curr_node.children[0].name != "GALNUMBER"
+        raise @err_class, "Child node must be a GALNUMBER!"
+      else
         @code.push("MOV $br $rr")
         @code.push("POP $br")
         curr_node.children[0].children.each do |num|
@@ -88,8 +97,8 @@ class Translator
         end
         out_str = out_str + "is $rr"
         @code.push("LOAD '#{out_str}'")
-      else
-        raise @err_class, "Malformed HOWMUCH statement!"
+      #else
+      #  raise @err_class, "Malformed HOWMUCH statement!"
       end
     end
   end
