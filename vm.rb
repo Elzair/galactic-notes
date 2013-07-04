@@ -1,23 +1,23 @@
-# This class represents a variable stored in the virtual machine.
-class Variable
-  attr_accessor :name   # Name of variable
-  attr_accessor :value  # Value of variable
-  attr_accessor :type   # Type of variable
-  attr_accessor :base   # Is variable a base variable or reference variable?
-
-  # This method creates a new variable.
-  # - name: a String containing the name of the variable
-  # - value: an Object containg the value of the variable
-  #          (if value is a string, the variable is a reference)
-  # - type: a String containing the type of the variable
-  # - base: whether the variable is a base variable or reference variable
-  def initialize(name = "", value = nil, type = "NONE", base = false)
-    @name = name
-    @value = value
-    @type = type
-    @base = base
-  end
-end
+## This class represents a variable stored in the virtual machine.
+#class Variable
+#  attr_accessor :name   # Name of variable
+#  attr_accessor :value  # Value of variable
+#  attr_accessor :type   # Type of variable
+#  attr_accessor :base   # Is variable a base variable or reference variable?
+#
+#  # This method creates a new variable.
+#  # - name: a String containing the name of the variable
+#  # - value: an Object containg the value of the variable
+#  #          (if value is a string, the variable is a reference)
+#  # - type: a String containing the type of the variable
+#  # - base: whether the variable is a base variable or reference variable
+#  def initialize(name = "", value = nil, type = "NONE", base = false)
+#    @name = name
+#    @value = value
+#    @type = type
+#    @base = base
+#  end
+#end
 
 # This class represents the virtual machine used to store & retrieve variables.
 # It has several registers, a stack for computing roman numerals, and a Hash
@@ -78,9 +78,16 @@ class VM
     @variables = variables
   end
 
-  # This method executes the input code.
-  # - input: the code to execute
+  # This method executes the inputted statement on the Virtual Machine.
+  # - input: a String containing the code to execute
   def execute(input = "")
+    # Ensure input is a nonempty string
+    if !input.is_a?(String)
+      raise @err_class, "Input must be a string!"
+    elsif input == ""
+      raise @err_class, "Empty input!" 
+    end
+
     # Split input into tokens by whitespace
     tokens = input.gsub(/\s+/m, " ").split(" ")
 
@@ -222,6 +229,19 @@ class VM
         @flags[:output] = true   
       end
     end
+  end
+
+  # This method outputs whether or not the Virtual Machine has halted.
+  # returns: whether or not the CPU halted
+  def halt?
+    return @flags[:halt]
+  end
+
+  # This method outputs whether or not the Virtual Machine has
+  # any output to return.
+  # returns: whether or not the CPU has output
+  def has_output?
+    return @flags[:output]
   end
 
   # This method retrieves the variable indicated by name.
