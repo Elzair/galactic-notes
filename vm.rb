@@ -93,6 +93,9 @@ class VM
       raise @err_class, "Empty input!" 
     end
 
+    # Set @flags[:output] to false at beginning of statement
+    @flags[:output] = false
+
     # Split input into tokens by whitespace
     tokens = input.gsub(/\s+/m, " ").split(" ")
 
@@ -149,6 +152,9 @@ class VM
       op1_type = tokens[1][0] # register, variable or number
       # If op1 is a number, do not strip leading character
       op1 = op1_type =~ /[[:digit:]]/ ? tokens[1] : tokens[1][1..-1].to_sym
+      if op1_type =~ /[[:digit:]]/
+        puts("TRUE")
+      end
       op2_type = tokens[2][0] # register or variable
       op2 = tokens[2][1..-1].to_sym
       # Ensure op1 is a number, variable or register & op2 is a variable or register 
@@ -156,20 +162,20 @@ class VM
         raise @err_class, "MOV Error: at least one operand must be a register!"
       elsif op2_type != "$" and op2_type != "%"
         raise @err_class, "MOV Error: 2nd operand must be a register or variable!"
-      elsif op1_type != "$" and op1_type != "%" and op1_type !=~ /[[:digit:]]/
+      elsif op1_type != "$" and op1_type != "%" and op1_type !~ /[[:digit:]]/
         raise @err_class, "MOV Error: 1st operand must be a register, variable or number!"
       # Ensure op1 is a valid register or variable
       # Since the Virtual Machine initializes a memory location by moving the
       # contents of a register into it, we only need to validate op2 if
       # it is a register
-      elsif op1_type == "$" and !@registers.has_key?(op1) == false
+      elsif op1_type == "$" and !@registers.has_key?(op1)
         raise @err_class, "MOV Error: $#{op1} is an invalid register!"
       elsif op1_type == "%" and !@variables.has_key?(op1)
         raise @err_class, "MOV Error: %#{op1} is an invalid variable!"
       elsif op1_type =~ /[[:digit:]]/ and !is_numeric?(op1)
         raise @err_class, "MOV Error: $#{op1} is an invalid number!"
       elsif op2_type == "$" and !@registers.has_key?(op2)
-        raise @err_class, "MOV Error: $#{op2} is an invalid register!"
+        raise @err_class, "MOV Error: (2) $#{op2} is an invalid register!"
       # Proceed if everything looks good
       else
         # First get value from op1

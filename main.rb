@@ -19,12 +19,16 @@ class Main
     # First handle any options passed
     @ignore_case = false
     @unit_test = false
+    @debug = false
     if options.respond_to?("include?")
       if options.include?(:ignore_case) and options[:ignore_case] == true
         @ignore_case = true
       end
       if options.include?(:unit_test) and options[:unit_test] == true
         @unit_test = true
+      end
+      if options.include?(:debug) and options[:debug] == true
+        @debug = true
       end
     end
 
@@ -155,15 +159,19 @@ class Main
     begin
       # First, use Lexical Analyzer to convert input into an Array of tokens
       tokens = @lexer.tokenize(inp, true)
-      tokens.each do |token|
-        output.print(token.to_s + " ")
+      if @debug
+        tokens.each do |token|
+          output.print(token.to_s + " ")
+        end
+        output.puts("")
       end
-      output.puts("")
       # Next, create the Abstract Syntax Tree to use for this iteration
       ast = @ast_class.new(@node_class, @err_classes[:ast_err_class])
       # Then, parse the tokens into the Abstract Syntax Tree & return result
       ast = @parser.parse(tokens, ast)
-      output.puts(ast.to_s)
+      if @debug
+        output.puts(ast.to_s)
+      end
       # Then, generate virtual machine code from the Abstract Syntax Tree
       code = @translator.translate(ast)
       code.each do |line|
@@ -203,6 +211,8 @@ if __FILE__ == $0
       options[:ignore_case] = true
     when "-u"
       options[:unit_test] = true
+    when "-d"
+      options[:debug] = true
     else # The program considers anything else a filename
       begin
         file = File.open(a)
