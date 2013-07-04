@@ -61,7 +61,7 @@ class Translator
     if curr_node.name == "HOWMANY"
       if curr_node.children[0].name == "GALNUMBER" and \
          curr_node.children[1].name == "COMMODITY"
-        @code.push("MOV $ar $rr") # Move contents of $ar into return register
+        @code.push("MOV $ar $rr") # Move contents of gp register #1 into return register
         @code.push("MUL $br $ar") # Multiply gp register #1 by gp register #2
         # Move contents of memory location into gp register #1
         @code.push("MOV %" + curr_node.children[1].value + " $ar")
@@ -110,14 +110,16 @@ class Translator
     elsif curr_node.children[0].name == "GALNUMBER" and \
           curr_node.children[1].name == "COMMODITY" and \
           curr_node.children[2].name == "NUMBER"
-      # Move contents of division register into memory location
-      @code.push("MOV $dr %" + curr_node.children[1].value)
-      @code.push("DIV $br $ar") # Divide gp register #1 by gp register #2
+      # Move result of division into memory location
+      @code.push("MOV $ar %" + curr_node.children[1].value)
+      @code.push("DIV $br $ar") # Divide $ar by $br & store result in $ar
       @code.push("POP $br")
       curr_node.children[0].children.each do |num|
         @code.push("PUSH")
         @code.push("MOV %" + num.value + " $br")
       end 
+      # Move number into $ar
+      @code.push("MOV #{curr_node.children[2].value} $ar")
     else
       raise @err_class, "Malformed ASSIGN statement!"
     end

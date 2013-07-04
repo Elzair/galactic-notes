@@ -42,8 +42,9 @@ class VM
 
       "MOV",  # Move contents of memory location into register, or move 
               # contents of register into memory location, or move contents
-              # of register into another register and set @flags[:nr_change]
-              # if contents of $nr changed
+              # of register into another register, or move constant value into
+              # register, or move constant value into memory location 
+              # and set @flags[:nr_change] to true if contents of $nr changed
 
       "MUL",  # Multiply contents of second register by contents
               # of first register and store result in second register
@@ -145,31 +146,34 @@ class VM
       if tokens.length != 3
         raise @err_class, "MOV Error: MOV requires two operands!"
       end
-      op1 = tokens[1][1..-1].to_sym
-      op1_is_reg = tokens[1][0] == "$" ? true : false
+      op1_type = tokens[1][0] # register, variable or number
+      # If op1 is a number, do not strip leading character
+      op1 = op1_type =~ /[[:digit:]]/ ? tokens[1].to_sym : tokens[1][1..-1].to_sym
+      op2_type = tokens[2][0] # register or variable
       op2 = tokens[2][1..-1].to_sym
-      op2_is_reg = tokens[2][0] == "$" ? true : false
-      # Ensure both tokens[1] and tokens[2] begin with either a "$" or a "%"
-      if !op1_is_reg and !op2_is_reg 
+      # Ensure op1 is a number, variable or register & op2 is a variable or register 
+      if op1_type != "$" and op2_type != "$"
         raise @err_class, "MOV Error: at least one operand must be a register!"
-      elsif tokens[2][0] != "$" and tokens[2][0] != "%"
+      elsif op2_type != "$" and op2_type != "%"
         raise @err_class, "MOV Error: 2nd operand must be a register or variable!"
-      elsif tokens[1][0] != "$" and tokens[1][0] != "%"
-        raise @err_class, "MOV Error: 1st operand must be a register or variable!"
+      elsif op1_type != "$" and op1_type != "%" and op1_type !=~ /[[:digit:]]/
+        raise @err_class, "MOV Error: 1st operand must be a register, variable or number!"
       # Ensure op1 is a valid register or variable
       # Since the Virtual Machine initializes a memory location by moving the
       # contents of a register into it, we only need to validate op2 if
       # it is a register
-      elsif op1_is_reg and !@registers.has_key?(op1) == false
+      elsif op1_type == "$" and !@registers.has_key?(op1) == false
         raise @err_class, "MOV Error: $#{op1} is an invalid register!"
-      elsif !op1_is_reg and !@variables.has_key?(op1)
+      elsif op1_type == "%" and !@variables.has_key?(op1)
         raise @err_class, "MOV Error: %#{op1} is an invalid variable!"
-      elsif op2_is_reg and !@registers.has_key?(op2)
+      elsif op1_type =~ /[[:digit:]]/ and !is_numeric?(op1)
+        raise @err_class, "MOV Error: $#{op1} is an invalid number!"
+      elsif op2_type == "$" and !@registers.has_key?(op2)
         raise @err_class, "MOV Error: $#{op2} is an invalid register!"
       # Proceed if everything looks good
       else
         tmp = op1_is_reg ? @registers[op1] : @variables[op1]
-        if op2_is_reg
+        if op2_type == "$"
           # If op2 is $nr, set @flags[:nr_change] to true if $nr changes
           if op2 == :nr
             old_nr = @registers[:nr]
@@ -259,6 +263,11 @@ class VM
   # returns: a String containing the output
   def output
     return @registers[:pr]
+  end
+
+  # This is a helper method to determine if an input token is a valid number.
+  def is_numeric?(n = 0)
+    true if Float(n) rescue false
   end
 
   # This method retrieves the variable indicated by name.
