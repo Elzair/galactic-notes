@@ -166,7 +166,14 @@ class VM
       else
         tmp = op1_is_reg ? @registers[op1] : @variables[op1]
         if op2_is_reg
+          # If op2 is $nr, set @flags[:nr_change] to true if $nr changes
+          if op2 == "nr"
+            old_nr = @registers[:nr]
+          end
           @registers[op2] = tmp
+          if op2 == "nr" and @registers[:nr] != old_nr
+            @flags[:nr_change] = true
+          end
         else
           @variables[op2] = tmp
         end
