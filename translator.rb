@@ -50,27 +50,35 @@ class Translator
       raise @err_class, "Malformed Query Statement!"
     end
 
+    # Next initialize output string
+    out_str = ""
+
     # Generate code for a valid HOWMANY query
     if curr_node.name == "HOWMANY"
       if curr_node.children[0].name == "GALNUMBER" and \
          curr_node.children[1].name == "COMMODITY"
-        @code.push("MOV $mr $rr") # Move multiply register into return register
-        @code.push("MUL $sr $ar") # Multiply stack register by gp register #1
+        @code.push("MOV $ar $rr") # Move multiply register into return register
+        @code.push("MUL $br $ar") # Multiply gp register #1 by gp register #2
         # Move contents of memory location into gp register #1
         @code.push("MOV %" + curr_node.children[1].value + " $ar")
+        @code.push("POP $br") # Pop value of stack register into gp register #2
         curr_node.children[0].children.each do |num|
-          @code.push("PUSH $br $sr") # Push gp register #2 onto stack register
+          out_str = out_str + num.value + " "
+          @code.push("PUSH $br") # Push gp register #2 onto stack register
           @code.push("MOV %" + num.value + " $br")
         end
+        out_str = out_str + curr_node.children[1].value + " is $rr Credits"
+        @code.push("LOAD '" + out_str + "'"
       else
         raise @err_class, "Malformed HOWMANY statement!"
       end
     # Generate code for a valid HOWMUCH query
     elsif curr_node.name == "HOWMUCH"
       if curr_node.children[0].name == "GALNUMBER"
-        @code.push("MOV $sr $rr")
+        @code.push("MOV $br $rr")
+        @code.push("POP $br")
         curr_node.children[0].children.each do |num|
-          @code.push("PUSH $br $sr")
+          @code.push("PUSH $br")
           @code.push("MOV %" + num.value + " $br")
         end
       else
@@ -90,16 +98,17 @@ class Translator
     if curr_node.children[0].name == "GALNUMERAL" and \
        curr_node.children[1].name == "GALNUMERAL"
       @code.push("MOV $ar %" + curr_node.children[0].value)
-      @code.push("MOV #" + curr_node.children[1].value + " $ar")
+      @code.push("MOV %" + curr_node.children[1].value + " $ar")
     # Generate code for a valid commodity assignment
     elsif curr_node.children[0].name == "GALNUMBER" and \
           curr_node.children[1].name == "COMMODITY" and \
           curr_node.children[2].name == "NUMBER"
       # Move contents of division register into memory location
       @code.push("MOV $dr %" + curr_node.children[1].value)
-      @code.push("DIV $sr $ar") # Divide gp register #1 by stack register
+      @code.push("DIV $br $ar") # Divide gp register #1 by gp register #2
+      @code.push("POP $br")
       curr_node.children[0].children.each do |num|
-        @code.push("ADD $br $sr")
+        @code.push("PUSH $br")
         @code.push("MOV %" + num.value + " $br")
       end 
     else

@@ -28,8 +28,7 @@ class Main
       end
     end
 
-    # Next initialize Lexical Analyzer, Parser, Virtual Machine,
-    # and the names of all the error classes
+    # Next initialize the names of all the error classes
     @err_classes = {
       :ast_err_class => ASTreeError,
       :lexer_err_class => LexerError,
@@ -40,7 +39,7 @@ class Main
     }
     @main_err_class = @err_classes[:main_err_class]
 
-    # Handle @ignore_case option
+    # Then initialize rules for Lexical Analyzer 
     if @ignore_case == true # Case Insensitive Rules
       @lexer_rules = {
         "HOW" => "HOW",
@@ -71,17 +70,30 @@ class Main
       }
     end
 
+    # Initialize Virtual Machine memory locations
+    @variables = {
+      :I =>    1,
+      :V =>    5,
+      :X =>   10,
+      :L =>   50,
+      :C =>  100,
+      :D =>  500,
+      :M => 1000
+    }
 
+    # Initialize input history
     @history = []
+
+    # Store the names of certain classes to inject into certain objects
     @token_class = Token
     @node_class = Node
     @ast_class = ASTree
-    # Inject name of lexical token class into @lexer
+
+    # Finally, initialize Lexical Analyzer, Parser, Translator and Virtual Machine
     @lexer = Lexer.new(@token_class, @err_classes[:lexer_err_class], @lexer_rules) 
-    # Inject name of node class into @parser
     @parser = Parser.new(@node_class, @err_classes[:parser_err_class])
     @translator = Translator.new(@err_classes[:translator_err_class])
-    @vm = VM.new(@err_classes[:vm_err_class])
+    @vm = VM.new(@err_classes[:vm_err_class], @variables)
   end
 
   # This method processes an array of input strings 
@@ -155,6 +167,10 @@ class Main
       code = @translator.translate(ast)
       code.each do |line|
         output.puts(line)
+      end
+      # Finally, execute code on the Virtual Machine
+      code.each do |line|
+        @vm.execute(line)
       end
     rescue ASTreeError, LexerError, ParserError, TranslatorError, VMError => e
       err.puts e.message
