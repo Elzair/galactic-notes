@@ -6,6 +6,7 @@ require './lexical_analyzer.rb'
 require './node.rb'
 require './abstract_syntax_tree.rb'
 require './parser.rb'
+require '.translator.rb'
 require './vm.rb'
 
 # This is the main class of the Galactic Notes program. It gets input from the user
@@ -34,6 +35,7 @@ class Main
       :lexer_err_class => LexerError,
       :main_err_class => MainError,
       :parser_err_class => ParserError,
+      :translator_err_class => TranslatorError,
       :vm_err_class => VMError
     }
     @main_err_class = @err_classes[:main_err_class]
@@ -76,6 +78,7 @@ class Main
     @node_class = Node
     @ast_class = ASTree
     @parser = Parser.new(@node_class, @err_classes[:parser_err_class])
+    @translator = Translator.new(@err_class[:translator_err_class])
     @vm = VM.new(@err_classes[:vm_err_class])
   end
 
@@ -146,7 +149,12 @@ class Main
       # Then, parse the tokens into the Abstract Syntax Tree & return result
       ast = @parser.parse(tokens, ast)
       output.puts(ast.to_s)
-    rescue ASTreeError, LexerError, ParserError, VMError => e
+      # Then, generate virtual machine code from the Abstract Syntax Tree
+      code = @translator.translate(ast)
+      code.each do |line|
+        output.puts(line)
+      end
+    rescue ASTreeError, LexerError, ParserError, TranslatorError, VMError => e
       err.puts e.message
     end
   end

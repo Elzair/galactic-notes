@@ -19,6 +19,11 @@ end
 class ParserError < RuntimeError
 end
 
+# This class represents an error encountered by the Translator 
+# during its operations.
+class TranslatorError < RuntimeError
+end
+
 # This class represents an error encountered by the Virtual Machine
 # during its operations.
 class VMError < RuntimeError

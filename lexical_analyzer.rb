@@ -4,7 +4,7 @@
 class Lexer
   # This method creates a new Lexer object.
   # - token_class: the class name of a lexical token
-  # - lexer_err_class: the class name of the error to raise
+  # - err_class: the class name of the error to raise
   # - rules: a hash providing rules to match tokens in the language
   def initialize(token_class, err_class, rules = {})
     @token_class = token_class
