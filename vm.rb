@@ -129,6 +129,8 @@ class VM
         raise @err_class, "DIV Error: $#{op2} is not a valid register!"
       elsif @registers[op1] == 0
         raise @err_class, "DIV Error: Cannot divide by zero!"
+      elsif op2 == :nr or op2 == :pr or op2 == :sr
+        raise @err_class, "DIV Error: Cannot use $#{op2} as 2nd operand!"
       else
         @registers[op2] /= @registers[op1]
       end
@@ -152,9 +154,6 @@ class VM
       op1_type = tokens[1][0] # register, variable or number
       # If op1 is a number, do not strip leading character
       op1 = op1_type =~ /[[:digit:]]/ ? tokens[1] : tokens[1][1..-1].to_sym
-      if op1_type =~ /[[:digit:]]/
-        puts("TRUE")
-      end
       op2_type = tokens[2][0] # register or variable
       op2 = tokens[2][1..-1].to_sym
       # Ensure op1 is a number, variable or register & op2 is a variable or register 
@@ -282,6 +281,12 @@ class VM
   # This is a helper method to determine if an input token is a valid number.
   def is_numeric?(n = 0)
     true if Float(n) rescue false
+  end
+
+  # This method returns the entire state of the Virtual Machine.
+  # returns: an Array of Hashes containing flags, registers & variables
+  def dump_state
+    return [ @flags, @registers, @variables ]
   end
 
   # This method retrieves the variable indicated by name.

@@ -174,14 +174,23 @@ class Main
       end
       # Then, generate virtual machine code from the Abstract Syntax Tree
       code = @translator.translate(ast)
-      code.each do |line|
-        output.puts(line)
+      if @debug
+        code.each do |line|
+          output.puts(line)
+        end
       end
       # Finally, execute code on the Virtual Machine
       #code.each do |line|
       #  @vm.execute(line)
       #end
       while !code.empty?
+        line = code.pop()
+        if @debug
+          @vm.dump_state.each do |ha|
+            output.puts(ha.to_s)
+          end
+          output.puts(line)
+        end
         @vm.execute(code.pop)
         if @vm.has_output?
           output.puts(@vm.output)
