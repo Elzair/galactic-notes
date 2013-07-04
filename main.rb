@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
 require './lexical_token.rb'
-require './lexer.rb'
+require './lexical_analyzer.rb'
 require './node.rb'
-require './astree.rb'
+require './abstract_syntax_tree.rb'
 require './parser.rb'
 require './vm.rb'
 
