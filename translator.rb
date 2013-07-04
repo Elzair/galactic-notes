@@ -24,7 +24,7 @@ class Translator
     end
 
     # Add end code used in all statements
-    @code.push("RET $rr")
+    @code.push("RET")
     
     # Get root node
     curr_node = ast.root
