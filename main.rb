@@ -6,7 +6,7 @@ require './lexical_analyzer.rb'
 require './node.rb'
 require './abstract_syntax_tree.rb'
 require './parser.rb'
-require '.translator.rb'
+require './translator.rb'
 require './vm.rb'
 
 # This is the main class of the Galactic Notes program. It gets input from the user
