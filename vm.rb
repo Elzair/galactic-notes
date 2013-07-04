@@ -148,7 +148,7 @@ class VM
       end
       op1_type = tokens[1][0] # register, variable or number
       # If op1 is a number, do not strip leading character
-      op1 = op1_type =~ /[[:digit:]]/ ? tokens[1].to_sym : tokens[1][1..-1].to_sym
+      op1 = op1_type =~ /[[:digit:]]/ ? tokens[1] : tokens[1][1..-1].to_sym
       op2_type = tokens[2][0] # register or variable
       op2 = tokens[2][1..-1].to_sym
       # Ensure op1 is a number, variable or register & op2 is a variable or register 
@@ -172,7 +172,15 @@ class VM
         raise @err_class, "MOV Error: $#{op2} is an invalid register!"
       # Proceed if everything looks good
       else
-        tmp = op1_is_reg ? @registers[op1] : @variables[op1]
+        # First get value from op1
+        if op1_type == "$"
+          tmp = @registers[op1]
+        elsif op1_type == "%"
+          tmp = @variables[op1]
+        else
+          tmp = op1.to_f
+        end
+        # Then store value in op2
         if op2_type == "$"
           # If op2 is $nr, set @flags[:nr_change] to true if $nr changes
           if op2 == :nr

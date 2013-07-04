@@ -107,7 +107,7 @@ class Main
       raise @main_err_class, "batch_process needs an array for inputs!"
     end
     inputs.each do |input|
-      process_input(input, output, err)
+      process_input(input, output, err, false)
     end
   end
 
@@ -117,7 +117,8 @@ class Main
   # - input: a String or Stream containing the users input
   # - output: a stream used for output
   # - err: a stream used for reporting errors
-  def process_input(input = STDIN, output = STDOUT, err = STDERR)
+  # - ret_val: whether or not to return anything to parent
+  def process_input(input = STDIN, output = STDOUT, err = STDERR, ret_val = true)
     # First make sure input, output and err are valid streams/strings
     if input.respond_to?("gets")
       is_input_stream = true
@@ -169,11 +170,24 @@ class Main
         output.puts(line)
       end
       # Finally, execute code on the Virtual Machine
-      code.each do |line|
-        @vm.execute(line)
+      #code.each do |line|
+      #  @vm.execute(line)
+      #end
+      while !code.empty?
+        @vm.execute(code.pop)
+        if @vm.has_output?
+          output.puts(@vm.output)
+        end
+        if @vm.halt? and ret_val
+          return false
+        end
       end
     rescue ASTreeError, LexerError, ParserError, TranslatorError, VMError => e
       err.puts e.message
+    ensure
+      if ret_val
+        return true
+      end
     end
   end
 end
