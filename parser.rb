@@ -7,25 +7,27 @@ end
 # the Galactic Notes program.  
 class Parser
   # This method creates a new Parser object.
-  # - ast_class: the name of the class representing the Abstract Syntax Tree
-  def initialize(ast_class)
-    @ast_class = ast_class
+  # - node_class: the class name of the Abstract Syntax Tree's node
+  def initialize(node_class)
+    @node_class = node_class
   end
 
-  # This method parses and handles input from the user
+  # This method parses the tokens from the lexical analyzer
+  # and returns an Abstract Syntax Tree of the result. 
   # - input: a String containing the user's input
-  def parse(tokens = [])
+  # - ast: an Object representing the Abstract Syntax Tree to use
+  # returns: an Object containing the result as an Abstract Syntax Tree
+  def parse(tokens = [], ast = nil)
     # Initialize needed variables to a known state
-    @output = @ast_class.new
-    #@input = input
+    @ast = ast
     @tokens = tokens
     @pos = 0
 
-    # Process input
+    # Parse high level statement
     statement
 
     # Return result
-    return @output
+    return @ast
   end
 
   # This method matches the top level rule for the Galactic Notes input grammar.
@@ -47,8 +49,8 @@ class Parser
 
   # This method parses a statement to quit the program.
   def quit
-    node = Node.new("QUIT", nil, [], true, true)
-    @output.insert(node)
+    node = @node_class.new("QUIT", nil, [], true, true)
+    @ast.insert(node)
     handle_end
   end
 
@@ -78,10 +80,10 @@ class Parser
     end
 
     # Insert HOWMANY & GALNUMBER nodes into AST
-    curr_node = Node.new("HOWMANY", nil, [], true, false)
-    @output.insert(curr_node)
-    curr_node = Node.new("GALNUMBER", nil, [], false, false)
-    @output.insert(curr_node, @output.seek({:name => "HOWMANY"}))
+    curr_node = @node_class.new("HOWMANY", nil, [], true, false)
+    @ast.insert(curr_node)
+    curr_node = @node_class.new("GALNUMBER", nil, [], false, false)
+    @ast.insert(curr_node, @ast.seek({:name => "HOWMANY"}))
     
     # Validate the rest of the sentence
     prev_token = nil
@@ -94,12 +96,12 @@ class Parser
       curr_token = get_next_token
       if curr_token.type == "QUESTION"
         prev_token.type = "COMMODITY"
-        curr_node = Node.new("COMMODITY", prev_token.value, [], false, true)
-        @output.insert(curr_node, @output.seek({:name => "HOWMANY"}))
+        curr_node = @node_class.new("COMMODITY", prev_token.value, [], false, true)
+        @ast.insert(curr_node, @ast.seek({:name => "HOWMANY"}))
       else
         prev_token.type = "GALNUM"
-        curr_node = Node.new("GALNUMERAL", prev_token.value, [], false, true)
-        @output.insert(curr_node, @output.seek({:name => "GALNUMBER"}))
+        curr_node = @node_class.new("GALNUMERAL", prev_token.value, [], false, true)
+        @ast.insert(curr_node, @ast.seek({:name => "GALNUMBER"}))
       end
     end
 
@@ -113,19 +115,19 @@ class Parser
       raise ParserError, "I don't know what you're talking about!"
     end
 
-    # Add HOWMUCH & GALNUMBER nodes to @output
-    curr_node = Node.new("HOWMUCH", nil, [], true, false)
-    @output.insert(curr_node)
-    curr_node = Node.new("GALNUMBER", nil, [], false, false)
-    @output.insert(curr_node, @output.seek({:name => "HOWMUCH"}))
+    # Add HOWMUCH & GALNUMBER nodes to @ast
+    curr_node = @node_class.new("HOWMUCH", nil, [], true, false)
+    @ast.insert(curr_node)
+    curr_node = @node_class.new("GALNUMBER", nil, [], false, false)
+    @ast.insert(curr_node, @ast.seek({:name => "HOWMUCH"}))
 
     # Make sure the rest of the statement is one or more Galactic Numerals
     curr_token = get_next_token
     while curr_token.type != "QUESTION"
       if curr_token.type == "VARIABLE"
         curr_token.type = "GALNUM"
-        curr_node = Node.new("GALNUMERAL", curr_token.value, [], false, true)
-        @output.insert(curr_node, @output.seek({:name => "GALNUMBER"}))
+        curr_node = @node_class.new("GALNUMERAL", curr_token.value, [], false, true)
+        @ast.insert(curr_node, @ast.seek({:name => "GALNUMBER"}))
       else
         raise ParserError, "I don't know what " + curr_token.value + " is!"
       end
@@ -145,29 +147,29 @@ class Parser
       raise ParserError, "I don't know what " + curr_token.value + " is!"
     end
 
-    # Add ASSIGN node to @output
-    curr_node = Node.new("ASSIGN", nil, [], true, false)
-    @output.insert(curr_node)
+    # Add ASSIGN node to @ast
+    curr_node = @node_class.new("ASSIGN", nil, [], true, false)
+    @ast.insert(curr_node)
 
     # The first variable in an assignment statement should always be
     # a Galactic Numeral, so we can declare it here.
     curr_token.type = "GALNUM"
-    curr_node = Node.new("GALNUMERAL", curr_token.value, [], false, true)
+    curr_node = @node_class.new("GALNUMERAL", curr_token.value, [], false, true)
 
     # Use assign_variable if only one variable is present
     # Use assign_value if otherwise
     curr_token = get_next_token
     if curr_token.type == "IS"
       # Insert curr_node here so we don't have to pass it to assign_variable()
-      @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
+      @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
       assign_variable(curr_token)
     elsif curr_token.type == "VARIABLE"
-      # Create GALNUMBER Node to contain all GALNUMERAL nodes & insert both it
-      # and the first GALNUMERAL node into @output
+      # Create GALNUMBER @node_class to contain all GALNUMERAL nodes & insert both it
+      # and the first GALNUMERAL node into @ast
       prev_node = curr_node
-      curr_node = Node.new("GALNUMBER", nil, [], false, false)
-      @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
-      @output.insert(prev_node, @output.seek({:name => "GALNUMBER"}))
+      curr_node = @node_class.new("GALNUMBER", nil, [], false, false)
+      @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
+      @ast.insert(prev_node, @ast.seek({:name => "GALNUMBER"}))
       assign_value(curr_token)
     else
       raise ParserError, "I don't know what you're talking about!"
@@ -185,8 +187,8 @@ class Parser
     curr_token = get_next_token
     if curr_token.type == "VARIABLE"
       curr_token.type = "GALNUM"
-      curr_node = Node.new("GALNUMERAL", curr_token.value, [], false, true)
-      @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
+      curr_node = @node_class.new("GALNUMERAL", curr_token.value, [], false, true)
+      @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
     else
       raise ParserError, "I don't know what " + curr_token.value + " is!"
     end
@@ -208,12 +210,12 @@ class Parser
       curr_token = get_next_token
       if curr_token.type == "VARIABLE"
         prev_token.type = "GALNUM"
-        curr_node = Node.new("GALNUMERAL", prev_token.value, [], false, true)
-        @output.insert(curr_node, @output.seek({:name => "GALNUMBER"}))
+        curr_node = @node_class.new("GALNUMERAL", prev_token.value, [], false, true)
+        @ast.insert(curr_node, @ast.seek({:name => "GALNUMBER"}))
       elsif curr_token.type == "IS"
         prev_token.type = "COMMODITY"
-        curr_node = Node.new("COMMODITY", prev_token.value, [], false, true)
-        @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
+        curr_node = @node_class.new("COMMODITY", prev_token.value, [], false, true)
+        @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
       else
         raise ParserError, "I don't know what " + curr_token.value + " is!"
       end
@@ -223,8 +225,8 @@ class Parser
     if curr_token.type != "NUMBER"
       raise ParserError, "I don't know what you're talking about!"
     else
-      curr_node = Node.new("NUMBER", curr_token.value, [], false, true)
-      @output.insert(curr_node, @output.seek({:name => "ASSIGN"}))
+      curr_node = @node_class.new("NUMBER", curr_token.value, [], false, true)
+      @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
     end
 
     if get_next_token.type != "CREDITS"

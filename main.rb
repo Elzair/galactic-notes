@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require './lexer.rb'
+require './node.rb'
 require './astree.rb'
 require './parser.rb'
 require './vm.rb'
@@ -58,9 +59,10 @@ class Main
     end
     @history = []
     @lexer = Lexer.new(@lexer_rules) 
-    # Inject name of Abstract Syntax Tree into Parser
-    ast_class = AST
-    @parser = Parser.new(ast_class)
+    # Inject name of node class & Abstract Syntax Tree class into Parser
+    @node_class = Node
+    @ast_class = AST
+    @parser = Parser.new(@node_class)
     @vm = VM.new
   end
 
@@ -120,12 +122,16 @@ class Main
 
     # Process user input
     begin
+      # First, use Lexical Analyzer to convert input into an Array of tokens
       tokens = @lexer.tokenize(inp, true)
       tokens.each do |token|
         output.print(token.to_s + " ")
       end
       output.puts("")
-      ast = @parser.parse(tokens)
+      # Next, create the Abstract Syntax Tree to use for this iteration
+      ast = @ast_class.new(@node_class)
+      # Then, parse the tokens into the Abstract Syntax Tree & return result
+      ast = @parser.parse(tokens, ast)
       output.puts(ast.to_s)
     rescue LexerError, ParserError, VMError => e
       err.puts e.message
