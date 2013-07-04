@@ -10,6 +10,8 @@ class Translator
 
   # This method generates virtual machine code from the input
   # Abstract Syntax Tree.
+  # NOTE: The statements are generated in the reverse order that
+  # they are to be executed. That is why they are popped off a stack.
   # - ast: the Abstract Syntax Tree
   # - returns: an Array of Strings containing virtual machine code
   def translate(ast = nil)
@@ -26,7 +28,9 @@ class Translator
     
     # Get root node
     curr_node = ast.root
-    if curr_node.name == "HOWMANY" or curr_node.name == "HOWMUCH"
+    if curr_node.name == "QUIT"
+      @code.push("HALT")
+    elsif curr_node.name == "HOWMANY" or curr_node.name == "HOWMUCH"
       translate_query(curr_node)
     elsif curr_node.name == "ASSIGN"
       translate_assign(curr_node)
@@ -35,8 +39,9 @@ class Translator
     # Add common initialization code used in all statements
     @code.push("CLR $ar") # Clear general purpose register #1
     @code.push("CLR $br") # Clear general purpose register #2
-    @code.push("CLR $sr") # Clear stack register
+    @code.push("CLR $nr") # Clear numeral register
     @code.push("CLR $rr") # Clear return register
+    @code.push("CLR $sr") # Clear stack register
 
     # Return virtual machine code
     return @code
@@ -56,15 +61,15 @@ class Translator
     if curr_node.name == "HOWMANY"
       if curr_node.children[0].name == "GALNUMBER" and \
          curr_node.children[1].name == "COMMODITY"
-        @code.push("MOV $ar $rr") # Move multiply register into return register
+        @code.push("MOV $ar $rr") # Move contents of $ar into return register
         @code.push("MUL $br $ar") # Multiply gp register #1 by gp register #2
         # Move contents of memory location into gp register #1
         @code.push("MOV %" + curr_node.children[1].value + " $ar")
-        @code.push("POP $br") # Pop value of stack register into gp register #2
+        @code.push("POP $br") # Pop value of stack register into $br 
         curr_node.children[0].children.each do |num|
           out_str = out_str + num.value + " "
-          @code.push("PUSH $br") # Push gp register #2 onto stack register
-          @code.push("MOV %" + num.value + " $br")
+          @code.push("PUSH") # Push numeral register onto stack register
+          @code.push("MOV %" + num.value + " $nr")
         end
         out_str = out_str + curr_node.children[1].value + " is $rr Credits"
         @code.push("LOAD '" + out_str + "'") # Load out_str into string register
@@ -110,7 +115,7 @@ class Translator
       @code.push("DIV $br $ar") # Divide gp register #1 by gp register #2
       @code.push("POP $br")
       curr_node.children[0].children.each do |num|
-        @code.push("PUSH $br")
+        @code.push("PUSH")
         @code.push("MOV %" + num.value + " $br")
       end 
     else
