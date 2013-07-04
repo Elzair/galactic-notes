@@ -18,7 +18,7 @@ class Token
   # This method overrides the toString method to return a string containing
   # all the info in the token (NOTE: FOR DEBUGGING PURPOSES ONLY)
   def to_s
-    return "[ " + @type + " " + @value.to_s + " " + @pos.to_s + " ] "
+    return "[ #{@type} #{@value.to_s} #{@pos.to_s} ]" 
   end
 end
 
