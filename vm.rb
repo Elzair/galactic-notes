@@ -75,7 +75,11 @@ class VM
     }
     
     # Initialize variables in memory
-    @variables = variables
+    if !variables.respond_to?(:has_key?)
+      raise @err_class, "Input variables must be in the form of a Hash!"
+    else
+      @variables = variables
+    end
   end
 
   # This method executes the inputted statement on the Virtual Machine.
@@ -101,7 +105,7 @@ class VM
       if tokens.length != 2 
         raise @err_class, "CLR Error: CLR has one operand!"
       end
-      op1 = tokens[1][1..-1]
+      op1 = tokens[1][1..-1].to_sym
       if tokens[1][0] != "$" or !@registers.has_key?(op1)
         raise @err_class, "CLR Error: operand must be a valid register!"
       else
@@ -113,11 +117,11 @@ class VM
       elsif tokens[1][0] != "$" or tokens[2][0] != "$"
         raise @err_class, "DIV Error: both operands must be registers!"
       end
-      op1 = tokens[1][1..-1]
-      op2 = tokens[2][1..-1]
+      op1 = tokens[1][1..-1].to_sym
+      op2 = tokens[2][1..-1].to_sym
       if !@registers.has_key?(op1)
         raise @err_class, "DIV Error: $#{op1} is not a valid register!"
-      elsif !@registers.has_key?(reg2)
+      elsif !@registers.has_key?(op2)
         raise @err_class, "DIV Error: $#{op2} is not a valid register!"
       elsif @registers[op1] == 0
         raise @err_class, "DIV Error: Cannot divide by zero!"
@@ -141,9 +145,9 @@ class VM
       if tokens.length != 3
         raise @err_class, "MOV Error: MOV requires two operands!"
       end
-      op1 = tokens[1][1..-1]
+      op1 = tokens[1][1..-1].to_sym
       op1_is_reg = tokens[1][0] == "$" ? true : false
-      op2 = tokens[2][1..-1]
+      op2 = tokens[2][1..-1].to_sym
       op2_is_reg = tokens[2][0] == "$" ? true : false
       # Ensure both tokens[1] and tokens[2] begin with either a "$" or a "%"
       if !op1_is_reg and !op2_is_reg 
@@ -167,7 +171,7 @@ class VM
         tmp = op1_is_reg ? @registers[op1] : @variables[op1]
         if op2_is_reg
           # If op2 is $nr, set @flags[:nr_change] to true if $nr changes
-          if op2 == "nr"
+          if op2 == :nr
             old_nr = @registers[:nr]
           end
           @registers[op2] = tmp
@@ -184,8 +188,8 @@ class VM
       elsif tokens[1][0] != "$" or tokens[2][0] != "$"
         raise @err_class, "MUL Error: both operands must be registers!"
       end
-      op1 = tokens[1][1..-1]
-      op2 = tokens[2][1..-1]
+      op1 = tokens[1][1..-1].to_sym
+      op2 = tokens[2][1..-1].to_sym
       if !@registers.has_key?(op1)
         raise @err_class, "MUL Error: $#{op1} is an invalid register!"
       elsif !@registers.has_key?(op2)
@@ -219,7 +223,7 @@ class VM
       elsif tokens[1][0] != "$"
         raise @err_class, "POP Error: operand must be a register!"
       end
-      op1 = tokens[1][1..-1]
+      op1 = tokens[1][1..-1].to_sym
       if !@registers.has_key?(op1)
         raise @err_class, "POP Error: $#{op1} is not a valid register!"
       # Make sure op1 is a usable register
@@ -249,6 +253,12 @@ class VM
   # returns: whether or not the CPU has output
   def has_output?
     return @flags[:output]
+  end
+
+  # This method returns the output of the Virtual Machine.
+  # returns: a String containing the output
+  def output
+    return @registers[:pr]
   end
 
   # This method retrieves the variable indicated by name.
