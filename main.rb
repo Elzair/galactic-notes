@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require './lexical_token.rb'
 require './lexer.rb'
 require './node.rb'
 require './astree.rb'
@@ -18,18 +19,20 @@ class Main
   # - options: a Hash representing the passed options
   def initialize(options)
     # First handle any options passed
-    if options.respond_to?("has_key")
-      if options.has_key("ignore_case") and options[:ignore_case] == true
+    @ignore_case = false
+    @unit_test = false
+    if options.respond_to?("include?")
+      if options.include?(:ignore_case) and options[:ignore_case] == true
         @ignore_case = true
       end
-      if options.has_key("unit_test") and options[:unit_test] == true
+      if options.include?(:unit_test) and options[:unit_test] == true
         @unit_test = true
       end
     end
 
     # Next initialize Lexical Analyzer, Parser and VM
     if @ignore_case == true # Case Insensitive Rules
-     @lexer_rules = {
+      @lexer_rules = {
         "HOW" => "HOW",
         "MANY" => "MANY",
         "MUCH" => "MUCH",
@@ -58,8 +61,10 @@ class Main
       }
     end
     @history = []
-    @lexer = Lexer.new(@lexer_rules) 
-    # Inject name of node class & Abstract Syntax Tree class into Parser
+    # Inject name of lexical token class into @lexer
+    @token_class = Token
+    @lexer = Lexer.new(@token_class, @lexer_rules) 
+    # Inject name of node class & Abstract Syntax Tree class into @parser
     @node_class = Node
     @ast_class = AST
     @parser = Parser.new(@node_class)
@@ -145,7 +150,6 @@ if __FILE__ == $0
   options = {} # Stores values of command line flags
   inputs = [] # Stores statements read from input files
   ARGV.each do |a|
-    #puts "Argument: #{a}"
     case a
     when "-i"
       options[:ignore_case] = true

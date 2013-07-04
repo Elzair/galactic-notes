@@ -190,7 +190,7 @@ class Parser
       curr_node = @node_class.new("GALNUMERAL", curr_token.value, [], false, true)
       @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
     else
-      raise ParserError, "I don't know what " + curr_token.value + " is!"
+      raise ParserError, "assign_variable I don't know what " + curr_token.value + " is!"
     end
 
     handle_end
@@ -217,7 +217,7 @@ class Parser
         curr_node = @node_class.new("COMMODITY", prev_token.value, [], false, true)
         @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
       else
-        raise ParserError, "I don't know what " + curr_token.value + " is!"
+        raise ParserError, "assign_value I don't know what " + curr_token.value + " is!"
       end
     end
 

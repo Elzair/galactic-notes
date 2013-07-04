@@ -1,26 +1,3 @@
-# Class representing a lexical token
-class Token
-  attr_accessor :type   # the type of token
-  attr_accessor :value  # the value of token
-  attr_accessor :pos    # the position of the token in the input stream
-
-  # This method creates a new Token object.
-  # - type: a String containing the type of token
-  # - value: a String containing the value of a token
-  # - pos: a FixNum representing a token's starting position in an input string
-  def initialize(type = "", value = "", pos = -1)
-    @type = type
-    @value = value
-    @pos = pos
-  end
-
-  # This method overrides the toString method to return a string containing
-  # all the info in the token (NOTE: FOR DEBUGGING PURPOSES ONLY)
-  def to_s
-    return "[ " + @type + " " + @value.to_s + " " + @pos.to_s + " ] "
-  end
-end
-
 # This class represents an exception raised by Lexer
 class LexerError < RuntimeError
 end
@@ -28,9 +5,11 @@ end
 # This class analyzes an input string and separates it
 # into tokens defined by the inputted series of rules.
 class Lexer
-  # This method creates a new Lexer object
+  # This method creates a new Lexer object.
+  # - token_class: the class name of a lexical token
   # - rules: a hash providing rules to match tokens in the language
-  def initialize(rules)
+  def initialize(token_class, rules = {})
+    @token_class = token_class
     @rules = rules
     @regexps = {}
     if @rules.respond_to?(:has_key?)
@@ -85,10 +64,10 @@ class Lexer
     # or if pos simply has an invalid value (i.e. -1)
     if pos < 0
       pos = 0
-      return Token.new("NoTokenFound", input[pos...-1], pos)
+      return @token_class.new("NoTokenFound", input[pos...-1], pos)
     end
     if pos >= input.length
-      return Token.new("EOL", "", pos)
+      return @token_class.new("EOL", "", pos)
     end
 
     # Match the current position of the input string
@@ -96,7 +75,7 @@ class Lexer
     token = nil
     @regexps.keys.each do |reg|
       if input.index(@regexps[reg], pos) == pos
-        token = Token.new(reg, @regexps[reg].match(input, pos).to_s, pos)
+        token = @token_class.new(reg, @regexps[reg].match(input, pos).to_s, pos)
         # If ignore_whitespace is true, return next non-whitespace token
         if token.value.gsub(/\s+/, "") == ""
           return next_token(input, pos + token.value.length, true)
@@ -108,7 +87,7 @@ class Lexer
 
     # Return Error token if no other tokens were found
     if token == nil
-      token = Token.new("NoTokenFound", input[pos...-1], pos) 
+      token = @token_class.new("NoTokenFound", input[pos...-1], pos) 
     end
   end
 end
