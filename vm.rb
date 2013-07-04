@@ -1,23 +1,23 @@
-## This class represents a variable stored in the virtual machine.
-#class Variable
-#  attr_accessor :name   # Name of variable
-#  attr_accessor :value  # Value of variable
-#  attr_accessor :type   # Type of variable
-#  attr_accessor :base   # Is variable a base variable or reference variable?
-#
-#  # This method creates a new variable.
-#  # - name: a String containing the name of the variable
-#  # - value: an Object containg the value of the variable
-#  #          (if value is a string, the variable is a reference)
-#  # - type: a String containing the type of the variable
-#  # - base: whether the variable is a base variable or reference variable
-#  def initialize(name = "", value = nil, type = "NONE", base = false)
-#    @name = name
-#    @value = value
-#    @type = type
-#    @base = base
-#  end
-#end
+# This class represents a variable stored in the virtual machine.
+class Variable
+  attr_accessor :name   # Name of variable
+  attr_accessor :value  # Value of variable
+  attr_accessor :type   # Type of variable
+  attr_accessor :base   # Is variable a base variable or reference variable?
+
+  # This method creates a new variable.
+  # - name: a String containing the name of the variable
+  # - value: an Object containg the value of the variable
+  #          (if value is a string, the variable is a reference)
+  # - type: a String containing the type of the variable
+  # - base: whether the variable is a base variable or reference variable
+  def initialize(name = "", value = nil, type = "NONE", base = false)
+    @name = name
+    @value = value
+    @type = type
+    @base = base
+  end
+end
 
 # This class represents the virtual machine used to store & retrieve variables.
 # It has several registers, a stack for computing roman numerals, and a Hash
@@ -42,14 +42,15 @@ class VM
 
       "MOV",  # Move contents of memory location into register, or move 
               # contents of register into memory location, or move contents
-              # of register into another register
+              # of register into another register and set @flags[:nr_change]
+              # if contents of $nr changed
 
       "MUL",  # Multiply contents of second register by contents
               # of first register and store result in second register
 
-      "POP",  # Pop contents of stack register into another register
+      "POP",  # Pop contents of $sr into another register
 
-      "PUSH", # Push contents of register into stack register according
+      "PUSH", # Push contents of $nr onto $sr according
               # to the roman numeral guidelines listed below
 
       "RET"   # Return output string with $rr replaced by the contents
@@ -60,9 +61,17 @@ class VM
     @registers = {
       :ar => 0,  # General Purpose Register #1
       :br => 0,  # General Purpose Register #2
+      :nr => 0,  # Numeral Register (used as input for PUSH)
       :pr => "", # Print Register
       :rr => 0,  # Return Register
       :sr => 0   # Stack Register (used in PUSH & POP)
+    }
+
+    # Initialize CPU flags
+    @flags = {
+      :halt => false,        # When true, the Virtual Machine halts
+      :nr_change => false,   # Whether or not to apply special rules to PUSH
+      :output => false,      # Set when VM has output to return
     }
     
     # Initialize variables in memory
@@ -85,8 +94,8 @@ class VM
       if tokens.length != 2 
         raise @err_class, "CLR Error: CLR has one operand!"
       end
-      op1 = tokens[1][1...-1]
-      if tokens[1][1] != "$" or !@registers.include?(op1)
+      op1 = tokens[1][1..-1]
+      if tokens[1][0] != "$" or !@registers.has_key?(op1)
         raise @err_class, "CLR Error: operand must be a valid register!"
       else
         @registers[op1] = 0
@@ -94,21 +103,124 @@ class VM
     when "DIV"
       if tokens.length != 3
         raise @err_class, "Invalid DIV expression: #{input}!"
-      elsif tokens[1][1] != "$" or tokens[2][1] != "$"
+      elsif tokens[1][0] != "$" or tokens[2][0] != "$"
         raise @err_class, "DIV Error: both operands must be registers!"
       end
-      reg1 = tokens[1][1...-1]
-      reg2 = tokens[2][1...-1]
-      if !@registers.include?(reg1)
-        raise @err_class, "DIV Error: $#{reg1} is not a valid register!"
-      elsif !@registers.include?(reg2)
-        raise @err_class, "DIV Error: $#{reg2} is not a valid register!"
-      elsif @registers[reg1] == 0
+      op1 = tokens[1][1..-1]
+      op2 = tokens[2][1..-1]
+      if !@registers.has_key?(op1)
+        raise @err_class, "DIV Error: $#{op1} is not a valid register!"
+      elsif !@registers.has_key?(reg2)
+        raise @err_class, "DIV Error: $#{op2} is not a valid register!"
+      elsif @registers[op1] == 0
         raise @err_class, "DIV Error: Cannot divide by zero!"
       else
-        @registers[reg2] /= @registers[reg1]
+        @registers[op2] /= @registers[op1]
       end
     when "HALT"
+      if tokens.length != 1
+        raise @err_class, "HALT Error: Halt takes no operands!"
+      else
+        @flags[:halt] = true
+      end
+    when "LOAD"
+      if tokens.length < 2 or tokens[1][0] != "'" or tokens[-1][-1] != "'"
+        raise @err_class, "LOAD Error: LOAD requires a valid input string!"
+      # Load everything between the single quotes into the print register
+      else
+        @registers[:pr] = input[5...-1].strip[1...-2]
+      end
+    when "MOV"
+      if tokens.length != 3
+        raise @err_class, "MOV Error: MOV requires two operands!"
+      end
+      op1 = tokens[1][1..-1]
+      op1_is_reg = tokens[1][0] == "$" ? true : false
+      op2 = tokens[2][1..-1]
+      op2_is_reg = tokens[2][0] == "$" ? true : false
+      # Ensure both tokens[1] and tokens[2] begin with either a "$" or a "%"
+      if !op1_is_reg and !op2_is_reg 
+        raise @err_class, "MOV Error: at least one operand must be a register!"
+      elsif tokens[2][0] != "$" and tokens[2][0] != "%"
+        raise @err_class, "MOV Error: 2nd operand must be a register or variable!"
+      elsif tokens[1][0] != "$" and tokens[1][0] != "%"
+        raise @err_class, "MOV Error: 1st operand must be a register or variable!"
+      # Ensure op1 is a valid register or variable
+      # Since the Virtual Machine initializes a memory location by moving the
+      # contents of a register into it, we only need to validate op2 if
+      # it is a register
+      elsif op1_is_reg and !@registers.has_key?(op1) == false
+        raise @err_class, "MOV Error: $#{op1} is an invalid register!"
+      elsif !op1_is_reg and !@variables.has_key?(op1)
+        raise @err_class, "MOV Error: %#{op1} is an invalid variable!"
+      elsif op2_is_reg and !@registers.has_key?(op2)
+        raise @err_class, "MOV Error: $#{op2} is an invalid register!"
+      # Proceed if everything looks good
+      else
+        tmp = op1_is_reg ? @registers[op1] : @variables[op1]
+        if op2_is_reg
+          @registers[op2] = tmp
+        else
+          @variables[op2] = tmp
+        end
+      end
+    when "MUL"
+      if tokens.length != 3
+        raise @err_class, "MUL Error: MUL takes two operands!"
+      elsif tokens[1][0] != "$" or tokens[2][0] != "$"
+        raise @err_class, "MUL Error: both operands must be registers!"
+      end
+      op1 = tokens[1][1..-1]
+      op2 = tokens[2][1..-1]
+      if !@registers.has_key?(op1)
+        raise @err_class, "MUL Error: $#{op1} is an invalid register!"
+      elsif !@registers.has_key?(op2)
+        raise @err_class, "MUL Error: $#{op2} is an invalid register!"
+      elsif op2 == "nr" or op2 == "pr" or op2 == "sr"
+        raise @err_class, "MUL Error: 2nd operand cannot be $#{op2}!"
+      else
+        @registers[op2] *= @registers[op1]
+      end
+    when "PUSH"
+      if tokens.length != 1
+        raise @err_class, "PUSH Error: PUSH takes no operands!" 
+      else
+        # Trigger Roman Numeral rules if a new numeral was pushed to $nr 
+        if @flags[:nr_change]
+          # If $nr < $sr, subtract $nr from $sr, add $nr to $sr otherwise
+          if @registers[:nr] < @registers[:sr]
+            @registers[:sr] -= @registers[:nr]
+          else
+            @registers[:sr] += @registers[:nr]
+          end
+          # Unset :nr_change flag
+          @flags[:nr_change] = false
+        else
+          @registers[:sr] += @registers[:nr]
+        end
+      end
+    when "POP"
+      if tokens.length != 2
+        raise @err_class, "POP Error: POP takes one operand!"
+      elsif tokens[1][0] != "$"
+        raise @err_class, "POP Error: operand must be a register!"
+      end
+      op1 = tokens[1][1..-1]
+      if !@registers.has_key?(op1)
+        raise @err_class, "POP Error: $#{op1} is not a valid register!"
+      # Make sure op1 is a usable register
+      elsif op1 == "nr" or op1 == "pr" or op1 == "sr"
+        raise @err_class, "POP Error: Cannot POP $sr onto $#{op1}!"
+      else
+        @registers[op1] = @registers[:pr]
+      end
+    when "RET"
+      if tokens.length != 1
+        raise @err_class, "RET Error: RET takes no operands!"
+      else
+        @registers[:pr].sub(/\$rr/, "#{@registers[:rr]}")
+        @flags[:output] = true   
+      end
     end
   end
 
