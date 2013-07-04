@@ -125,7 +125,7 @@ class VM
         raise @err_class, "LOAD Error: LOAD requires a valid input string!"
       # Load everything between the single quotes into the print register
       else
-        @registers[:pr] = input[5...-1].strip[1...-2]
+        @registers[:pr] = input[5..-1].strip[1..-2]
       end
     when "MOV"
       if tokens.length != 3
@@ -169,12 +169,11 @@ class VM
         if op2_type == "$"
           # If op2 is $nr, set @flags[:nr_change] to true if $nr changes
           old_nr = 0
-          if op2 == "nr"
+          if op2 == :nr
             old_nr = @registers[:nr]
-          puts old_nr
           end
           @registers[op2] = tmp
-          if op2 == "nr" and @registers[:nr] != old_nr
+          if op2 == :nr and @registers[:nr] != old_nr
             @flags[:nr_change] = true
           end
         else

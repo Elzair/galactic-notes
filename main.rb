@@ -199,6 +199,12 @@ class Main
           return false
         end
       end
+      # Print current Virtual Machine state if @debug is true
+      if @debug
+        @vm.dump_state.each do |ha|
+          output.puts(ha.to_s)
+        end
+      end
       return true
     rescue ASTreeError, LexerError, ParserError, TranslatorError, VMError => e
       err.puts e.message
