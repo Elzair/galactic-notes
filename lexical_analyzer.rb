@@ -43,7 +43,7 @@ class Lexer
     begin
       curr_token = next_token(input, pos, ignore_whitespace)
       if curr_token.type == "NoTokenFound"
-        raise @err_class, "Invalid Token: " + curr_token.value.to_s
+        raise @err_class, "Invalid Token: #{curr_token.value.to_s}"
       else
         tokens.push(curr_token)
         pos = curr_token.pos + curr_token.value.length 
