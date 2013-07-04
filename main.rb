@@ -191,7 +191,7 @@ class Main
           end
           output.puts(line)
         end
-        @vm.execute(code.pop)
+        @vm.execute(line)
         if @vm.has_output?
           output.puts(@vm.output)
         end
