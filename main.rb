@@ -31,6 +31,7 @@ class Main
     end
 
     # Next initialize Lexical Analyzer, Parser and VM
+    @main_err_class = MainError
     if @ignore_case == true # Case Insensitive Rules
       @lexer_rules = {
         "HOW" => "HOW",
@@ -79,7 +80,7 @@ class Main
   def batch_process(inputs = [], output = STDOUT, err = STDERR)
     # First ensure inputs is an array
     if !inputs.respond_to?("each")
-      raise MainError, "batch_process needs an array for inputs!"
+      raise @main_err_class, "batch_process needs an array for inputs!"
     end
     inputs.each do |input|
       process_input(input, output, err)
@@ -99,13 +100,13 @@ class Main
     elsif input.kind_of?(String)
       is_input_stream = false
     else
-      raise MainError, "You must pass either a string or a stream for input!"
+      raise @main_err_class, "You must pass either a string or a stream for input!"
     end
     if !output.respond_to?("print") or !output.respond_to?("puts")
-      raise MainError, "You must pass a valid stream for output!"
+      raise @main_err_class, "You must pass a valid stream for output!"
     end
     if !err.respond_to?("print") or !err.respond_to?("puts")
-      raise MainError, "You must pass a valid stream for err!"
+      raise @main_err_class, "You must pass a valid stream for err!"
     end
 
     # Get user input differently if input is a stream or string
