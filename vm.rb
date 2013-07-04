@@ -203,8 +203,21 @@ class VM
       else
         # Trigger Roman Numeral rules if a new numeral was pushed to $nr 
         if @flags[:nr_change]
-          # If $nr < $sr, subtract $nr from $sr, add $nr to $sr otherwise
+          # If $nr < $sr and $nr subtract $nr from $sr, 
+          # add $nr to $sr otherwise
           if @registers[:nr] < @registers[:sr]
+            # Ensure that $nr is within one (decimal) order of magnitude of $sr
+            # and that $nr / 10^x == 1 for some integer x
+            if @registers[:nr] < @registers[:sr] / 10
+              raise @err_class, "Invalid Numeral!"
+            end
+            test = @registers[:nr].to_i
+            until test <= 1
+              test /= 10
+            end
+            if test != 1
+              raise @err_class, "Invalid Numeral!"
+            end
             @registers[:sr] -= @registers[:nr]
           else
             @registers[:sr] += @registers[:nr]
