@@ -70,6 +70,8 @@ class Main
         "\n" => "EOL"
       }
     end
+
+
     @history = []
     @token_class = Token
     @node_class = Node

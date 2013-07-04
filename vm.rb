@@ -28,17 +28,17 @@ class VM
   # - variables: a Hash representing the 'memory locations' to pre-load
   def initialize(err_class, variables = {})
     @err_class = err_class
-    roman_numerals = { 
-      "I" => Variable.new("I", 1, "NUMERAL", true),
-      "V" => Variable.new("V", 5, "NUMERAL", true),
-      "X" => Variable.new("X", 10, "NUMERAL", true),
-      "L" => Variable.new("L", 50, "NUMERAL", true),
-      "C" => Variable.new("C", 100, "NUMERAL", true),
-      "D" => Variable.new("D", 500, "NUMERAL", true),
-      "M" => Variable.new("M", 1000, "NUMERAL", true)
-    }
+    #roman_numerals = { 
+    #  "I" => Variable.new("I", 1, "NUMERAL", true),
+    #  "V" => Variable.new("V", 5, "NUMERAL", true),
+    #  "X" => Variable.new("X", 10, "NUMERAL", true),
+    #  "L" => Variable.new("L", 50, "NUMERAL", true),
+    #  "C" => Variable.new("C", 100, "NUMERAL", true),
+    #  "D" => Variable.new("D", 500, "NUMERAL", true),
+    #  "M" => Variable.new("M", 1000, "NUMERAL", true)
+    #}
     # Make sure roman numerals cannot be overwritten!
-    @variables = variables.merge(roman_numerals)
+    #@variables = variables.merge(roman_numerals)
   end
 
   # This method retrieves the variable indicated by name.

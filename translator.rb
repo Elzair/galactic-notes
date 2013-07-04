@@ -54,11 +54,12 @@ class Translator
     if curr_node.name == "HOWMANY"
       if curr_node.children[0].name == "GALNUMBER" and \
          curr_node.children[1].name == "COMMODITY"
-        @code.push("MOV $mr $rr")
-        @code.push("MUL $sr $ar")
+        @code.push("MOV $mr $rr") # Move multiply register into return register
+        @code.push("MUL $sr $ar") # Multiply stack register by gp register #1
+        # Move contents of memory location into gp register #1
         @code.push("MOV %" + curr_node.children[1].value + " $ar")
         curr_node.children[0].children.each do |num|
-          @code.push("ADD $br $sr")
+          @code.push("PUSH $br $sr") # Push gp register #2 onto stack register
           @code.push("MOV %" + num.value + " $br")
         end
       else
@@ -69,7 +70,7 @@ class Translator
       if curr_node.children[0].name == "GALNUMBER"
         @code.push("MOV $sr $rr")
         curr_node.children[0].children.each do |num|
-          @code.push("ADD $br $sr")
+          @code.push("PUSH $br $sr")
           @code.push("MOV %" + num.value + " $br")
         end
       else
@@ -94,8 +95,9 @@ class Translator
     elsif curr_node.children[0].name == "GALNUMBER" and \
           curr_node.children[1].name == "COMMODITY" and \
           curr_node.children[2].name == "NUMBER"
+      # Move contents of division register into memory location
       @code.push("MOV $dr %" + curr_node.children[1].value)
-      @code.push("DIV $sr $ar")
+      @code.push("DIV $sr $ar") # Divide gp register #1 by stack register
       curr_node.children[0].children.each do |num|
         @code.push("ADD $br $sr")
         @code.push("MOV %" + num.value + " $br")
