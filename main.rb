@@ -66,7 +66,7 @@ class Main
     @lexer = Lexer.new(@token_class, @lexer_rules) 
     # Inject name of node class & Abstract Syntax Tree class into @parser
     @node_class = Node
-    @ast_class = AST
+    @ast_class = ASTree
     @parser = Parser.new(@node_class)
     @vm = VM.new
   end
