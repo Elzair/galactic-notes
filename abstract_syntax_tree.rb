@@ -23,10 +23,10 @@ class ASTree
 
     # If ASTree is empty, insert node at root 
     if curr_node == @root and @root == nil
-      if node.is_root == true
+      if node.is_root 
         @root = node
       else
-        raise @err_class, "Invalid root node: " + node.to_s
+        raise @err_class, "Invalid root node: #{node.to_s}"
       end
     elsif curr_node == nil
       raise @err_class, "Cannot add a subnode to a nil node!"
@@ -40,8 +40,8 @@ class ASTree
   # - node: the Node to be inserted
   # - curr_node: the Node under which to insert node
   def insert_child_node(node, curr_node)
-    if node.is_root == false
-      if curr_node.is_leaf == false
+    if !node.is_root
+      if !curr_node.is_leaf
         curr_node.children.push(node)
       else
         raise @err_class, "Cannot add child node to leaf node!"
@@ -58,7 +58,7 @@ class ASTree
   def seek(attributes)
     result = seek_r(attributes, @root)
     if result == nil
-      raise @err_class, "No match found for " + attributes.to_s + "!"
+      raise @err_class, "No match found for #{attributes.to_s}!"
     else
       return result
     end
@@ -78,10 +78,10 @@ class ASTree
         match = false 
       end
     end
-    if match == true
+    if match
       return curr_node
     # Return nil if curr_node is a leaf node
-    elsif curr_node.is_leaf == true 
+    elsif curr_node.is_leaf 
       return nil
     else
       # If a child node (or one of its children) contains a match, then
