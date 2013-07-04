@@ -116,7 +116,7 @@ class Translator
       @code.push("POP $br")
       curr_node.children[0].children.each do |num|
         @code.push("PUSH")
-        @code.push("MOV %" + num.value + " $br")
+        @code.push("MOV %" + num.value + " $nr")
       end 
       # Move number into $ar
       @code.push("MOV #{curr_node.children[2].value} $ar")
