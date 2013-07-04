@@ -31,29 +31,38 @@ class VM
 
     # Initialize opcodes
     @opcodes = [
-      "CLR", # Clear contents of register
+      "CLR",  # Clear contents of register
 
-      "DIV", # Divide contents of second register by contents
-             # of first register and store result in second register
-      "MOV", # Move contents of memory location into register, or move 
-             # contents of register into memory location, or move contents
-             # of register into another register
+      "DIV",  # Divide contents of second register by contents
+              # of first register and store result in second register
 
-      "MUL", # Multiply contents of second register by contents
-             # of first register and store result in second register
+      "HALT", # Halts Virtual Machine
 
-      "POP", # Pop contents of stack register into another register
+      "LOAD", # Load string into print register
 
-      "PUSH" # Push contents of register into stack register according
-             # to the roman numeral guidelines listed below
+      "MOV",  # Move contents of memory location into register, or move 
+              # contents of register into memory location, or move contents
+              # of register into another register
+
+      "MUL",  # Multiply contents of second register by contents
+              # of first register and store result in second register
+
+      "POP",  # Pop contents of stack register into another register
+
+      "PUSH", # Push contents of register into stack register according
+              # to the roman numeral guidelines listed below
+
+      "RET"   # Return output string with $rr replaced by the contents
+              # of the return register
     ]
     
     # Initialize registers
     @registers = {
-      :ar => 0, # General Purpose Register #1
-      :br => 0, # General Purpose Register #2
-      :rr => 0, # Return Register
-      :sr => 0  # Stack Register (used in PUSH & POP)
+      :ar => 0,  # General Purpose Register #1
+      :br => 0,  # General Purpose Register #2
+      :pr => "", # Print Register
+      :rr => 0,  # Return Register
+      :sr => 0   # Stack Register (used in PUSH & POP)
     }
     
     # Initialize variables in memory
@@ -65,8 +74,41 @@ class VM
   def execute(input = "")
     # Split input into tokens by whitespace
     tokens = input.gsub(/\s+/m, " ").split(" ")
-    if !@opcodes.include?(token[0])
-      raise @err_class, "Invalid opcode: #{tokens[0]}"
+
+    # Ensure first token is a valid opcode
+    if !@opcodes.include?(tokens[0])
+      raise @err_class, "Invalid opcode, #{tokens[0]}, in statement: #{input}!"
+    end
+
+    case tokens[0]
+    when "CLR"
+      if tokens.length != 2 
+        raise @err_class, "CLR Error: CLR has one operand!"
+      end
+      op1 = tokens[1][1...-1]
+      if tokens[1][1] != "$" or !@registers.include?(op1)
+        raise @err_class, "CLR Error: operand must be a valid register!"
+      else
+        @registers[op1] = 0
+      end
+    when "DIV"
+      if tokens.length != 3
+        raise @err_class, "Invalid DIV expression: #{input}!"
+      elsif tokens[1][1] != "$" or tokens[2][1] != "$"
+        raise @err_class, "DIV Error: both operands must be registers!"
+      end
+      reg1 = tokens[1][1...-1]
+      reg2 = tokens[2][1...-1]
+      if !@registers.include?(reg1)
+        raise @err_class, "DIV Error: $#{reg1} is not a valid register!"
+      elsif !@registers.include?(reg2)
+        raise @err_class, "DIV Error: $#{reg2} is not a valid register!"
+      elsif @registers[reg1] == 0
+        raise @err_class, "DIV Error: Cannot divide by zero!"
+      else
+        @registers[reg2] /= @registers[reg1]
+      end
+    when "HALT"
     end
   end
 

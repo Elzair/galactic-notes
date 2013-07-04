@@ -35,8 +35,7 @@ class Translator
     # Add common initialization code used in all statements
     @code.push("CLR $ar") # Clear general purpose register #1
     @code.push("CLR $br") # Clear general purpose register #2
-    @code.push("CLR $mr") # Clear stack register
-    @code.push("CLR $sr") # Clear multiply register
+    @code.push("CLR $sr") # Clear stack register
     @code.push("CLR $rr") # Clear return register
 
     # Return virtual machine code
@@ -68,7 +67,7 @@ class Translator
           @code.push("MOV %" + num.value + " $br")
         end
         out_str = out_str + curr_node.children[1].value + " is $rr Credits"
-        @code.push("LOAD '" + out_str + "'"
+        @code.push("LOAD '" + out_str + "'") # Load out_str into string register
       else
         raise @err_class, "Malformed HOWMANY statement!"
       end
@@ -78,9 +77,12 @@ class Translator
         @code.push("MOV $br $rr")
         @code.push("POP $br")
         curr_node.children[0].children.each do |num|
+          out_str = out_str + num.value + " "
           @code.push("PUSH $br")
           @code.push("MOV %" + num.value + " $br")
         end
+        out_str = out_str + "is $rr"
+        @code.push("LOAD '" + out_str + "'")
       else
         raise @err_class, "Malformed HOWMUCH statement!"
       end
