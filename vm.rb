@@ -253,7 +253,8 @@ class VM
       if tokens.length != 1
         raise @err_class, "RET Error: RET takes no operands!"
       else
-        @registers[:pr].sub(/\$rr/, "#{@registers[:rr]}")
+        #@registers[:pr].sub(/\$rr/, "#{@registers[:rr]}")
+        @registers[:pr].gsub!("\$rr", @registers[:rr].to_s)
         @flags[:output] = true   
       end
     end
