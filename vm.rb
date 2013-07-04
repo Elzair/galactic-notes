@@ -1,23 +1,3 @@
-## This class represents a variable stored in the virtual machine.
-#class Variable
-#  attr_accessor :name   # Name of variable
-#  attr_accessor :value  # Value of variable
-#  attr_accessor :type   # Type of variable
-#  attr_accessor :base   # Is variable a base variable or reference variable?
-#
-#  # This method creates a new variable.
-#  # - name: a String containing the name of the variable
-#  # - value: an Object containg the value of the variable
-#  #          (if value is a string, the variable is a reference)
-#  # - type: a String containing the type of the variable
-#  # - base: whether the variable is a base variable or reference variable
-#  def initialize(name = "", value = nil, type = "NONE", base = false)
-#    @name = name
-#    @value = value
-#    @type = type
-#    @base = base
-#  end
-#end
 
 # This class represents the virtual machine used to store & retrieve variables.
 # It has several registers, a stack for computing roman numerals, and a Hash
