@@ -244,10 +244,10 @@ class VM
       if !@registers.has_key?(op1)
         raise @err_class, "POP Error: $#{op1} is not a valid register!"
       # Make sure op1 is a usable register
-      elsif op1 == "nr" or op1 == "pr" or op1 == "sr"
+      elsif op1 == :nr or op1 == :pr or op1 == :sr
         raise @err_class, "POP Error: Cannot POP $sr onto $#{op1}!"
       else
-        @registers[op1] = @registers[:pr]
+        @registers[op1] = @registers[:sr]
       end
     when "RET"
       if tokens.length != 1
