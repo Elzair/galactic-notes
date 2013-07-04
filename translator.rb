@@ -64,15 +64,15 @@ class Translator
         @code.push("MOV $ar $rr") # Move contents of gp register #1 into return register
         @code.push("MUL $br $ar") # Multiply gp register #1 by gp register #2
         # Move contents of memory location into gp register #1
-        @code.push("MOV %" + curr_node.children[1].value + " $ar")
+        @code.push("MOV %#{curr_node.children[1].value} $ar")
         @code.push("POP $br") # Pop value of stack register into $br 
         curr_node.children[0].children.each do |num|
           out_str = out_str + num.value + " "
           @code.push("PUSH") # Push numeral register onto stack register
-          @code.push("MOV %" + num.value + " $nr")
+          @code.push("MOV %#{num.value} $nr")
         end
         out_str = out_str + curr_node.children[1].value + " is $rr Credits"
-        @code.push("LOAD '" + out_str + "'") # Load out_str into string register
+        @code.push("LOAD '#{out_str}'") # Load out_str into string register
       else
         raise @err_class, "Malformed HOWMANY statement!"
       end
@@ -84,10 +84,10 @@ class Translator
         curr_node.children[0].children.each do |num|
           out_str = out_str + num.value + " "
           @code.push("PUSH")
-          @code.push("MOV %" + num.value + " $nr")
+          @code.push("MOV %#{num.value} $nr")
         end
         out_str = out_str + "is $rr"
-        @code.push("LOAD '" + out_str + "'")
+        @code.push("LOAD '#{out_str}'")
       else
         raise @err_class, "Malformed HOWMUCH statement!"
       end
@@ -104,19 +104,19 @@ class Translator
     # Generate code for a valid numeral assignment
     if curr_node.children[0].name == "GALNUMERAL" and \
        curr_node.children[1].name == "GALNUMERAL"
-      @code.push("MOV $ar %" + curr_node.children[0].value)
-      @code.push("MOV %" + curr_node.children[1].value + " $ar")
+      @code.push("MOV $ar %#{curr_node.children[0].value}")
+      @code.push("MOV %#{curr_node.children[1].value} $ar")
     # Generate code for a valid commodity assignment
     elsif curr_node.children[0].name == "GALNUMBER" and \
           curr_node.children[1].name == "COMMODITY" and \
           curr_node.children[2].name == "NUMBER"
       # Move result of division into memory location
-      @code.push("MOV $ar %" + curr_node.children[1].value)
+      @code.push("MOV $ar %#{curr_node.children[1].value}")
       @code.push("DIV $br $ar") # Divide $ar by $br & store result in $ar
       @code.push("POP $br")
       curr_node.children[0].children.each do |num|
         @code.push("PUSH")
-        @code.push("MOV %" + num.value + " $nr")
+        @code.push("MOV %#{num.value} $nr")
       end 
       # Move number into $ar
       @code.push("MOV #{curr_node.children[2].value} $ar")
