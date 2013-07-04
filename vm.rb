@@ -19,17 +19,15 @@ class Variable
   end
 end
 
-# This class represents an error encountered by VM during its operations
-class VMError < RuntimeError
-end
-
 # This class represents the virtual machine used to store & retrieve variables.
 # It has several registers, a stack for computing roman numerals, and a Hash
 # containing all the pre-defined variables.
 class VM
   # This method creates a new VM object.
+  # - err_class: the class name of the error to raise
   # - variables: a Hash representing the 'memory locations' to pre-load
-  def initialize(variables = {})
+  def initialize(err_class, variables = {})
+    @err_class = err_class
     roman_numerals = { 
       "I" => Variable.new("I", 1, "NUMERAL", true),
       "V" => Variable.new("V", 5, "NUMERAL", true),
@@ -49,7 +47,7 @@ class VM
     if @variables.has_key?(name)
       return @variables[name]
     else
-      raise VMError, name + " is not defined!"
+      raise @err_class, name + " is not defined!"
     end
   end
 
@@ -68,7 +66,7 @@ class VM
   # - variable: a Variable object containing the information to store
   def store(variable = nil)
     if @variables.has_key?(variable.name)
-      raise VMError, variable.name + " already exists!"
+      raise @err_class, variable.name + " already exists!"
     else
       @variables[variable.name] = variable
     end

@@ -1,15 +1,12 @@
 #!/usr/bin/env ruby
 
+require './errors.rb'
 require './lexical_token.rb'
 require './lexical_analyzer.rb'
 require './node.rb'
 require './abstract_syntax_tree.rb'
 require './parser.rb'
 require './vm.rb'
-
-# This class represents errors encountered by a Main object during its operations.
-class MainError < RuntimeError
-end
 
 # This is the main class of the Galactic Notes program. It gets input from the user
 # and manages the interactions between the lexical analyzer, the parser and the
@@ -30,8 +27,18 @@ class Main
       end
     end
 
-    # Next initialize Lexical Analyzer, Parser and VM
-    @main_err_class = MainError
+    # Next initialize Lexical Analyzer, Parser, Virtual Machine,
+    # and the names of all the error classes
+    @err_classes = {
+      :ast_err_class => ASTreeError,
+      :lexer_err_class => LexerError,
+      :main_err_class => MainError,
+      :parser_err_class => ParserError,
+      :vm_err_class => VMError
+    }
+    @main_err_class = @err_classes[:main_err_class]
+
+    # Handle @ignore_case option
     if @ignore_case == true # Case Insensitive Rules
       @lexer_rules = {
         "HOW" => "HOW",
@@ -64,12 +71,12 @@ class Main
     @history = []
     # Inject name of lexical token class into @lexer
     @token_class = Token
-    @lexer = Lexer.new(@token_class, @lexer_rules) 
+    @lexer = Lexer.new(@token_class, @err_classes[:lexer_err_class], @lexer_rules) 
     # Inject name of node class & Abstract Syntax Tree class into @parser
     @node_class = Node
     @ast_class = ASTree
-    @parser = Parser.new(@node_class)
-    @vm = VM.new
+    @parser = Parser.new(@node_class, @err_classes[:parser_err_class])
+    @vm = VM.new(@err_classes[:vm_err_class])
   end
 
   # This method processes an array of input strings 
@@ -135,11 +142,11 @@ class Main
       end
       output.puts("")
       # Next, create the Abstract Syntax Tree to use for this iteration
-      ast = @ast_class.new(@node_class)
+      ast = @ast_class.new(@node_class, @err_classes[:ast_err_class])
       # Then, parse the tokens into the Abstract Syntax Tree & return result
       ast = @parser.parse(tokens, ast)
       output.puts(ast.to_s)
-    rescue LexerError, ParserError, VMError => e
+    rescue ASTreeError, LexerError, ParserError, VMError => e
       err.puts e.message
     end
   end

@@ -1,27 +1,26 @@
-# This class represents an exception raised by Lexer
-class LexerError < RuntimeError
-end
 
 # This class analyzes an input string and separates it
 # into tokens defined by the inputted series of rules.
 class Lexer
   # This method creates a new Lexer object.
   # - token_class: the class name of a lexical token
+  # - lexer_err_class: the class name of the error to raise
   # - rules: a hash providing rules to match tokens in the language
-  def initialize(token_class, rules = {})
+  def initialize(token_class, err_class, rules = {})
     @token_class = token_class
+    @err_class = err_class
     @rules = rules
     @regexps = {}
     if @rules.respond_to?(:has_key?)
       # Create a regular expression for each individual rule. 
       @rules.keys.each do |rule|
         if rule == "NoTokenFound"
-          raise LexerError, "You cannot define a grammar rule called 'NoTokenFound'!"
+          raise @err_class, "You cannot define a grammar rule called 'NoTokenFound'!"
         end
         @regexps[@rules[rule]] = Regexp.new(rule)
       end
     else
-      raise LexerError, "Input rules must be inside a hash!"
+      raise @err_class, "Input rules must be inside a hash!"
     end
   end
 
@@ -33,7 +32,7 @@ class Lexer
   def tokenize(input = "", ignore_whitespace = true)
     # Ensure input is a nonempty string
     if input == nil or input == ""
-      raise ParserError, "You must enter something!"
+      raise @err_class, "You must enter something!"
     end
     
     # Initialize needed variables
@@ -44,7 +43,7 @@ class Lexer
     begin
       curr_token = next_token(input, pos, ignore_whitespace)
       if curr_token.type == "NoTokenFound"
-        raise LexerError, "Invalid Token: " + curr_token.value.to_s
+        raise @err_class, "Invalid Token: " + curr_token.value.to_s
       else
         tokens.push(curr_token)
         pos = curr_token.pos + curr_token.value.length 

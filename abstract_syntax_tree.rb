@@ -6,8 +6,9 @@ class ASTree
   # This method creates a new Abstract Syntax Tree.
   # - node_class: the name of the class representing a node in the tree
   # - root: a Node representing the @root of this Abstract Syntax Tree
-  def initialize(node_class, root = nil)
+  def initialize(node_class, err_class, root = nil)
     @node_class = node_class
+    @err_class = err_class
     @root = root
   end
 
@@ -17,7 +18,7 @@ class ASTree
   def insert(node = nil, curr_node = @root)
     # Ensure node is a valid node
     if node == nil or !node.is_a?(@node_class)
-      raise ParserError, "Error! Invalid node!"
+      raise @err_class, "Error! Invalid node!"
     end
 
     # If ASTree is empty, insert node at root 
@@ -25,10 +26,10 @@ class ASTree
       if node.is_root == true
         @root = node
       else
-        raise ParserError, "Invalid root node: " + node.to_s
+        raise @err_class, "Invalid root node: " + node.to_s
       end
     elsif curr_node == nil
-      raise ParserError, "Cannot add a subnode to a nil node!"
+      raise @err_class, "Cannot add a subnode to a nil node!"
     # If @root contains an element, add node as a child node to curr_node
     else
       insert_child_node(node, curr_node)
@@ -43,10 +44,10 @@ class ASTree
       if curr_node.is_leaf == false
         curr_node.children.push(node)
       else
-        raise ParserError, "Cannot add child node to leaf node!"
+        raise @err_class, "Cannot add child node to leaf node!"
       end
     else
-      raise ParserError, "Cannot insert more than one root node!"
+      raise @err_class, "Cannot insert more than one root node!"
     end
   end
 
@@ -57,7 +58,7 @@ class ASTree
   def seek(attributes)
     result = seek_r(attributes, @root)
     if result == nil
-      raise ParserError, "No match found for " + attributes.to_s + "!"
+      raise @err_class, "No match found for " + attributes.to_s + "!"
     else
       return result
     end
