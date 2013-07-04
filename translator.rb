@@ -93,10 +93,10 @@ class Translator
     # Generate code for a valid commodity assignment
     elsif curr_node.children[0].name == "GALNUMBER" and \
           curr_node.children[1].name == "COMMODITY" and \
-          curr_node.children[2].anme == "NUMBER"
+          curr_node.children[2].name == "NUMBER"
       @code.push("MOV $dr %" + curr_node.children[1].value)
       @code.push("DIV $sr $ar")
-      @curr_node.children[0].children.each do |num|
+      curr_node.children[0].children.each do |num|
         @code.push("ADD $br $sr")
         @code.push("MOV %" + num.value + " $br")
       end 

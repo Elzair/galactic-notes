@@ -71,14 +71,14 @@ class Main
       }
     end
     @history = []
-    # Inject name of lexical token class into @lexer
     @token_class = Token
-    @lexer = Lexer.new(@token_class, @err_classes[:lexer_err_class], @lexer_rules) 
-    # Inject name of node class & Abstract Syntax Tree class into @parser
     @node_class = Node
     @ast_class = ASTree
+    # Inject name of lexical token class into @lexer
+    @lexer = Lexer.new(@token_class, @err_classes[:lexer_err_class], @lexer_rules) 
+    # Inject name of node class into @parser
     @parser = Parser.new(@node_class, @err_classes[:parser_err_class])
-    @translator = Translator.new(@err_class[:translator_err_class])
+    @translator = Translator.new(@err_classes[:translator_err_class])
     @vm = VM.new(@err_classes[:vm_err_class])
   end
 
