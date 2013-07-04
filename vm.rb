@@ -188,8 +188,10 @@ class VM
         # Then store value in op2
         if op2_type == "$"
           # If op2 is $nr, set @flags[:nr_change] to true if $nr changes
-          if op2 == :nr
+          old_nr = 0
+          if op2 == "nr"
             old_nr = @registers[:nr]
+          puts old_nr
           end
           @registers[op2] = tmp
           if op2 == "nr" and @registers[:nr] != old_nr

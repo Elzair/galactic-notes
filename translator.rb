@@ -23,9 +23,6 @@ class Translator
       @code = []
     end
 
-    # Add end code used in all statements
-    @code.push("RET")
-    
     # Get root node
     curr_node = ast.root
     if curr_node.name == "QUIT"
@@ -53,6 +50,9 @@ class Translator
     if curr_node == nil
       raise @err_class, "Malformed Query Statement!"
     end
+
+    # Add code to return result of query
+    @code.push("RET")
 
     # Next initialize output string
     out_str = ""
@@ -83,8 +83,8 @@ class Translator
         @code.push("POP $br")
         curr_node.children[0].children.each do |num|
           out_str = out_str + num.value + " "
-          @code.push("PUSH $br")
-          @code.push("MOV %" + num.value + " $br")
+          @code.push("PUSH")
+          @code.push("MOV %" + num.value + " $nr")
         end
         out_str = out_str + "is $rr"
         @code.push("LOAD '" + out_str + "'")

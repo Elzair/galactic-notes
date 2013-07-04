@@ -199,12 +199,9 @@ class Main
           return false
         end
       end
+      return true
     rescue ASTreeError, LexerError, ParserError, TranslatorError, VMError => e
       err.puts e.message
-    ensure
-      if ret_val
-        return true
-      end
     end
   end
 end
@@ -243,7 +240,9 @@ if __FILE__ == $0
   # Process any input files
   main.batch_process(inputs, STDOUT, STDERR)
   # Enter main input loop
-  loop do
-    main.process_input(STDIN, STDOUT, STDERR)
-  end 
+  continue = true
+  until continue == false
+    continue = main.process_input(STDIN, STDOUT, STDERR, true)
+  end
+  puts "See you later!"
 end
