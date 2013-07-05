@@ -88,7 +88,7 @@ class Parser
     curr_token = get_next_token
     while curr_token.type != "QUESTION"
       if curr_token.type != "VARIABLE"
-        raise @err_class, "I don't know what " + curr_token.value + " is!"
+        raise @err_class, "I don't know what #{curr_token.value} is!"
       end
       prev_token = curr_token
       curr_token = get_next_token
@@ -142,7 +142,7 @@ class Parser
     if curr_token == nil
       raise @err_class, "I don't know what you're talking about!"
     elsif curr_token.type != "VARIABLE"
-      raise @err_class, "I don't know what " + curr_token.value + " is!"
+      raise @err_class, "I don't know what #{curr_token.value} is!"
     end
 
     # Add ASSIGN node to @ast
@@ -188,7 +188,7 @@ class Parser
       curr_node = @node_class.new("GALNUMERAL", curr_token.value, [], false, true)
       @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
     else
-      raise @err_class, "assign_variable I don't know what " + curr_token.value + " is!"
+      raise @err_class, "I don't know what #{curr_token.value} is!"
     end
 
     handle_end
@@ -215,7 +215,7 @@ class Parser
         curr_node = @node_class.new("COMMODITY", prev_token.value, [], false, true)
         @ast.insert(curr_node, @ast.seek({:name => "ASSIGN"}))
       else
-        raise @err_class, "assign_value I don't know what " + curr_token.value + " is!"
+        raise @err_class, "assign_value I don't know what #{curr_token.value} is!"
       end
     end
 
