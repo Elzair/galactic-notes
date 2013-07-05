@@ -36,7 +36,7 @@ class Node
       out = out + @value.to_s + " "
     end
     # If show_children is true, show child nodes in brackets
-    if show_children == true
+    if show_children
       if @children == []
         out = out + "[] "
       else
