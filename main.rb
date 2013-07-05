@@ -44,7 +44,7 @@ class Main
     @main_err_class = @err_classes[:main_err_class]
 
     # Then initialize rules for Lexical Analyzer 
-    if @ignore_case == true # Case Insensitive Rules
+    if @ignore_case # Case Insensitive Rules
       @lexer_rules = {
         "HOW" => "HOW",
         "MANY" => "MANY",
@@ -148,7 +148,7 @@ class Main
     end
 
     # If @ignore_case is true, convert inp to upper case
-    if @ignore_case == true
+    if @ignore_case
       inp = inp.upcase
     end
 
@@ -165,13 +165,16 @@ class Main
         end
         output.puts("")
       end
+
       # Next, create the Abstract Syntax Tree to use for this iteration
       ast = @ast_class.new(@node_class, @err_classes[:ast_err_class])
+
       # Then, parse the tokens into the Abstract Syntax Tree & return result
       ast = @parser.parse(tokens, ast)
       if @debug
         output.puts(ast.to_s)
       end
+
       # Then, generate virtual machine code from the Abstract Syntax Tree
       code = @translator.translate(ast)
       if @debug
@@ -179,33 +182,37 @@ class Main
           output.puts(line)
         end
       end
+
       # Finally, execute code on the Virtual Machine
-      #code.each do |line|
-      #  @vm.execute(line)
-      #end
       while !code.empty?
         line = code.pop()
+
         if @debug
           @vm.dump_state.each do |ha|
             output.puts(ha.to_s)
           end
           output.puts(line)
         end
+
         @vm.execute(line)
+
         if @vm.has_output?
           output.puts(@vm.output)
         end
+
         if @vm.halt? and ret_val
-          return false
+          return false # this stops the loop
         end
       end
+
       # Print current Virtual Machine state if @debug is true
       if @debug
         @vm.dump_state.each do |ha|
           output.puts(ha.to_s)
         end
       end
-      return true
+
+      return true # keep loop going
     rescue ASTreeError, LexerError, ParserError, TranslatorError, VMError => e
       err.puts e.message
     end
@@ -242,13 +249,18 @@ if __FILE__ == $0
   # Flush STDIN to prevent input from spilling over into main loop
   STDIN.flush
 
+  # Create Main object
   main = Main.new(options)
+
   # Process any input files
   main.batch_process(inputs, STDOUT, STDERR)
+
   # Enter main input loop
   continue = true
   until continue == false
     continue = main.process_input(STDIN, STDOUT, STDERR, true)
   end
+
+  # Exit program
   puts "See you later!"
 end
