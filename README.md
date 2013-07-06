@@ -49,7 +49,9 @@ Lexical Analyzer
 The lexical analyzer takes an input string and returns the input as a series of
 tokens. Valid tokens are 'how', 'many', 'much', 'is', 'Credits', '?', 'quit',
 valid arabic numeral formatted number, and any sequence of alphabet characters.
+
 **NOTE:** The lexical analyzer ignores whitespace characters.
+
 **NOTE:** When case insensitivity mode is on, the program capitalizes tokens.
 
 Parser
