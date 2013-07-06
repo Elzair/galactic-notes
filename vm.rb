@@ -42,6 +42,7 @@ class VM
     @registers = {
       :ar => 0,  # General Purpose Register #1
       :br => 0,  # General Purpose Register #2
+      :cr => 0,  # Count register (used to count PUSHes)
       :nr => 0,  # Numeral Register (used as input for PUSH)
       :pr => "", # Print Register
       :rr => 0,  # Return Register
@@ -175,6 +176,8 @@ class VM
           @registers[op2] = tmp
           if op2 == :nr and @registers[:nr] != old_nr
             @flags[:nr_change] = true
+            # Reset count
+            @registers[:cr] = 0 
           end
         else
           @variables[op2] = tmp
@@ -198,6 +201,8 @@ class VM
         @registers[op2] *= @registers[op1]
       end
     when "PUSH"
+      # Increment count
+      @registers[:cr] += 1
       if tokens.length != 1
         raise @err_class, "PUSH Error: PUSH takes no operands!" 
       else
@@ -223,8 +228,21 @@ class VM
             @registers[:sr] += @registers[:nr]
           end
           # Unset :nr_change flag
-          @flags[:nr_change] = false
+          @flags[:nr_change] = false 
         else
+          # Ensure $nr is 1, 10, 100, or 1000.
+          # Values of 5, 50, and 500 cannot appear twice!
+          test = @registers[:nr].to_i
+          until test <= 1
+            test /= 10
+          end
+          if test != 1
+            raise @err_class, "Invalid Numeral!"
+          end
+          # Ensure the same numeral is not in succession more than thrice!
+          if @registers[:cr] > 3
+            raise @err_class, "Invalid Numeral!"
+          end
           @registers[:sr] += @registers[:nr]
         end
       end
