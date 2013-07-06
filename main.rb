@@ -24,9 +24,6 @@ class Main
       if options.include?(:ignore_case) and options[:ignore_case] == true
         @ignore_case = true
       end
-      if options.include?(:unit_test) and options[:unit_test] == true
-        @unit_test = true
-      end
       if options.include?(:debug) and options[:debug] == true
         @debug = true
       end
@@ -228,8 +225,6 @@ if __FILE__ == $0
     case a
     when "-i"
       options[:ignore_case] = true
-    when "-u"
-      options[:unit_test] = true
     when "-d"
       options[:debug] = true
     else # The program considers anything else a filename
