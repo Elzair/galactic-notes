@@ -1,12 +1,16 @@
-Galactic Input EBNF:
+EBNF of Galactic Input Grammar:
+
 stmt :=   assign_statement, EOL 
        | query_statement, EOL
+       | quit_statement, EOL
 
-assign_statement :=   variable, ws, "is", ws, variable
+assign_statement :=  variable, ws, "is", ws, variable
                    | variable, ws, variable, ws, "is", arabic_number
 
-query_statement :=   "How many", ws, variable, ws, "is", ws, variable, ws, variable, ws, [ variable, ws, ] "?"
+query_statement :=  "How many", ws, variable, ws, "is", ws, variable, ws, variable, ws, [ variable, ws, ] "?"
                   | "How much", ws, "is", ws,  "?"
+
+quit_statement := "quit"
 
 variable := letter, { letter }
 
@@ -18,18 +22,5 @@ letter := :alpha:
 
 ws : " "
 
-Roman Numeral EBNF:
-
-number := [ "M" ], [ "M" ], [ "M" ], [ hundreds ]
-
-hundreds :=   [ "CM" ], [ tens ]
-           | [ "CD" ], [ tens ]
-           | [ "D" ], [ "C" ], [ "C" ], [ "C" ], [ tens ]
-
-tens :=   [ "XC" ], [ ones ]
-       | [ "XL" ], [ ones ]
-       | [ "L" ], [ "X" ], [ "X" ], [ "X" ], [ ones ]
-
-ones := "IX" | "IV" | [ "V" ], [ "I" ], [ "I" ], [ "I" ]
 
 
